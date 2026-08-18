@@ -147,6 +147,23 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenWhatsApp }) =>
                   <span>Health Articles & Blog</span>
                 </button>
               </li>
+              <li>
+                <button onClick={() => onNavigate('admin')} className="hover:text-teal-400 text-teal-400/90 font-medium transition-colors flex items-center gap-1.5">
+                  <ChevronRight className="w-3.5 h-3.5 text-teal-500" />
+                  <span>Staff / Admin Portal</span>
+                </button>
+              </li>
+              <li>
+                <a 
+                  href="https://emidas.co.in:8890/pages/Login.aspx" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="hover:text-sky-300 text-sky-400 font-medium transition-colors flex items-center gap-1.5"
+                >
+                  <ChevronRight className="w-3.5 h-3.5 text-sky-400" />
+                  <span>LIS Portal (EMIDAS Online)</span>
+                </a>
+              </li>
             </ul>
           </div>
 

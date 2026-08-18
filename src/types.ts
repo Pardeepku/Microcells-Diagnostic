@@ -9,13 +9,32 @@ export type PageType =
   | 'reports' 
   | 'book-test' 
   | 'blog' 
-  | 'blog-post'
+  | 'blog-post' 
   | 'contact' 
   | 'faq' 
   | 'privacy' 
   | 'terms' 
-  | 'disclaimer'
-  | 'admin';
+  | 'disclaimer' 
+  | 'admin'
+  | 'admin-login';
+
+export interface AdminUser {
+  username: string;
+  name: string;
+  role: 'Super Administrator' | 'Lab Manager' | 'Chief Pathologist' | 'Staff Admin';
+  email: string;
+  lastLogin: string;
+  avatarColor?: string;
+}
+
+export interface AdminCredential {
+  username: string;
+  password: string;
+  name: string;
+  role: 'Super Administrator' | 'Lab Manager' | 'Chief Pathologist' | 'Staff Admin';
+  email: string;
+  avatarColor?: string;
+}
 
 export type AdminTab = 
   | 'overview' 

@@ -25,6 +25,7 @@ import { PatientReportsView } from './pages/PatientReportsView';
 import { BlogView } from './pages/BlogView';
 import { BookTestView } from './pages/BookTestView';
 import { AdminDashboardView } from './pages/AdminDashboardView';
+import { AdminLoginView } from './pages/AdminLoginView';
 
 // Modals & Drawers
 import { BookingModal } from './components/BookingModal';
@@ -130,19 +131,23 @@ export default function App() {
     setIsReportViewerOpen(true);
   };
 
+  const isAdminSection = currentPage === 'admin' || currentPage === 'admin-login';
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 font-sans selection:bg-teal-500 selection:text-white">
       
-      {/* Header Bar */}
-      <Header
-        currentPage={currentPage}
-        onNavigate={handleNavigate}
-        cart={cart}
-        onOpenCart={() => setIsCartOpen(true)}
-        onOpenPrescription={() => setIsPrescriptionOpen(true)}
-        onOpenBooking={() => handleBookNow()}
-        onOpenWhatsApp={() => setIsWhatsAppOpen(true)}
-      />
+      {/* Header Bar (hidden in Admin section) */}
+      {!isAdminSection && (
+        <Header
+          currentPage={currentPage}
+          onNavigate={handleNavigate}
+          cart={cart}
+          onOpenCart={() => setIsCartOpen(true)}
+          onOpenPrescription={() => setIsPrescriptionOpen(true)}
+          onOpenBooking={() => handleBookNow()}
+          onOpenWhatsApp={() => setIsWhatsAppOpen(true)}
+        />
+      )}
 
       {/* Main Page Body */}
       <main className="flex-1">
@@ -235,6 +240,13 @@ export default function App() {
           />
         )}
 
+        {currentPage === 'admin-login' && (
+          <AdminLoginView
+            onNavigate={handleNavigate}
+            onLoginSuccess={() => handleNavigate('admin')}
+          />
+        )}
+
         {currentPage === 'admin' && (
           <AdminDashboardView
             onNavigate={handleNavigate}
@@ -242,44 +254,48 @@ export default function App() {
         )}
       </main>
 
-      {/* Footer */}
-      <Footer
-        onNavigate={handleNavigate}
-        onOpenPrescription={() => setIsPrescriptionOpen(true)}
-        onOpenBooking={() => handleBookNow()}
-        onOpenWhatsApp={() => setIsWhatsAppOpen(true)}
-      />
+      {/* Footer (hidden in Admin section) */}
+      {!isAdminSection && (
+        <Footer
+          onNavigate={handleNavigate}
+          onOpenPrescription={() => setIsPrescriptionOpen(true)}
+          onOpenBooking={() => handleBookNow()}
+          onOpenWhatsApp={() => setIsWhatsAppOpen(true)}
+        />
+      )}
 
-      {/* Floating Action Menu for Quick Support & Cart */}
-      <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3 no-print">
-        {/* WhatsApp Quick Button */}
-        <button
-          onClick={() => setIsWhatsAppOpen(true)}
-          className="p-3.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl shadow-xl shadow-emerald-900/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 group"
-          title="Chat with Diagnostic Desk on WhatsApp"
-        >
-          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-            <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.312.045-.694.062-2.18-.553-1.899-.785-3.119-2.733-3.214-2.86-.095-.127-.773-1.029-.773-1.963 0-.933.489-1.392.664-1.583.174-.191.381-.239.508-.239.127 0 .254.001.365.006.118.005.275-.045.431.328.159.381.54 1.317.587 1.413.047.095.079.207.016.334-.063.127-.095.207-.191.318-.095.111-.201.248-.287.333-.095.095-.195.199-.084.39.111.191.494.814 1.06 1.317.728.647 1.342.847 1.533.942.191.095.302.079.413-.048.111-.127.476-.556.603-.746.127-.19.254-.159.429-.095.175.063 1.111.524 1.302.619.191.095.318.143.365.222.048.079.048.46-.096.865z"/>
-          </svg>
-          <span className="hidden sm:inline text-xs font-bold pr-1">WhatsApp Desk</span>
-        </button>
-
-        {/* Floating Cart Button (if items > 0) */}
-        {cart.length > 0 && (
+      {/* Floating Action Menu for Quick Support & Cart (hidden in Admin section) */}
+      {!isAdminSection && (
+        <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3 no-print">
+          {/* WhatsApp Quick Button */}
           <button
-            onClick={() => setIsCartOpen(true)}
-            className="p-3.5 bg-sky-900 hover:bg-sky-800 text-white rounded-2xl shadow-xl shadow-sky-950/25 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+            onClick={() => setIsWhatsAppOpen(true)}
+            className="p-3.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl shadow-xl shadow-emerald-900/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 group"
+            title="Chat with Diagnostic Desk on WhatsApp"
           >
-            <div className="relative">
-              <span className="w-2.5 h-2.5 bg-teal-400 rounded-full absolute -top-1 -right-1 ring-2 ring-sky-900 animate-pulse"></span>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-              </svg>
-            </div>
-            <span className="text-xs font-bold pr-1">{cart.length} Tests in List</span>
+            <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+              <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.312.045-.694.062-2.18-.553-1.899-.785-3.119-2.733-3.214-2.86-.095-.127-.773-1.029-.773-1.963 0-.933.489-1.392.664-1.583.174-.191.381-.239.508-.239.127 0 .254.001.365.006.118.005.275-.045.431.328.159.381.54 1.317.587 1.413.047.095.079.207.016.334-.063.127-.095.207-.191.318-.095.111-.201.248-.287.333-.095.095-.195.199-.084.39.111.191.494.814 1.06 1.317.728.647 1.342.847 1.533.942.191.095.302.079.413-.048.111-.127.476-.556.603-.746.127-.19.254-.159.429-.095.175.063 1.111.524 1.302.619.191.095.318.143.365.222.048.079.048.46-.096.865z"/>
+            </svg>
+            <span className="hidden sm:inline text-xs font-bold pr-1">WhatsApp Desk</span>
           </button>
-        )}
-      </div>
+
+          {/* Floating Cart Button (if items > 0) */}
+          {cart.length > 0 && (
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="p-3.5 bg-sky-900 hover:bg-sky-800 text-white rounded-2xl shadow-xl shadow-sky-950/25 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+            >
+              <div className="relative">
+                <span className="w-2.5 h-2.5 bg-teal-400 rounded-full absolute -top-1 -right-1 ring-2 ring-sky-900 animate-pulse"></span>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+              </div>
+              <span className="text-xs font-bold pr-1">{cart.length} Tests in List</span>
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Toast Notification Banner */}
       {toastMessage && (

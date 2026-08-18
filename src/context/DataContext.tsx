@@ -7,7 +7,9 @@ import {
   BookingRequest, 
   PatientReportRecord, 
   DiagnosticDepartment,
-  AnnouncementSettings 
+  AnnouncementSettings,
+  AdminUser,
+  AdminCredential
 } from '../types';
 import { 
   POPULAR_TESTS, 
@@ -20,6 +22,35 @@ import {
 } from '../data/labData';
 
 const STORAGE_KEY = 'microcells_diagnostic_store_v1';
+const ADMIN_ACCOUNTS_KEY = 'microcells_admin_accounts_v1';
+const ADMIN_SESSION_KEY = 'microcells_admin_session_v1';
+
+const DEFAULT_ADMIN_ACCOUNTS: AdminCredential[] = [
+  {
+    username: 'admin',
+    password: 'admin123',
+    name: 'Lab Administrator',
+    role: 'Super Administrator',
+    email: 'admin@microcells.com',
+    avatarColor: 'teal'
+  },
+  {
+    username: 'dr.pathology',
+    password: 'microcells2026',
+    name: 'Dr. Anand Verma, MD',
+    role: 'Chief Pathologist',
+    email: 'anand.verma@microcells.com',
+    avatarColor: 'indigo'
+  },
+  {
+    username: 'labmanager',
+    password: 'manager123',
+    name: 'Pooja Iyer',
+    role: 'Lab Manager',
+    email: 'pooja.iyer@microcells.com',
+    avatarColor: 'amber'
+  }
+];
 
 const INITIAL_BOOKINGS: BookingRequest[] = [
   {
@@ -162,6 +193,15 @@ interface DataContextType extends LabDataStore {
   updateAnnouncement: (announcement: Partial<AnnouncementSettings>) => void;
   updateDepartment: (id: string, dept: Partial<DiagnosticDepartment>) => void;
 
+  // Admin Authentication & Access Control
+  adminUser: AdminUser | null;
+  isAdminAuthenticated: boolean;
+  adminAccounts: AdminCredential[];
+  loginAdmin: (username: string, password: string, rememberMe?: boolean) => { success: boolean; message?: string };
+  logoutAdmin: () => void;
+  changeAdminPassword: (username: string, currentPass: string, newPass: string) => { success: boolean; message: string };
+  updateAdminAccounts: (accounts: AdminCredential[]) => void;
+
   // System
   resetToDefaults: () => void;
   exportDataJSON: () => string;
@@ -204,6 +244,131 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       announcement: INITIAL_ANNOUNCEMENT
     };
   });
+
+  // Admin Authentication State
+  const [adminAccounts, setAdminAccounts] = useState<AdminCredential[]>(() => {
+    try {
+      const savedAccounts = localStorage.getItem(ADMIN_ACCOUNTS_KEY);
+      if (savedAccounts) {
+        const parsed = JSON.parse(savedAccounts);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.error('Error reading admin accounts from storage', e);
+    }
+    return DEFAULT_ADMIN_ACCOUNTS;
+  });
+
+  const [adminUser, setAdminUser] = useState<AdminUser | null>(() => {
+    try {
+      const savedSession = localStorage.getItem(ADMIN_SESSION_KEY) || sessionStorage.getItem(ADMIN_SESSION_KEY);
+      if (savedSession) {
+        return JSON.parse(savedSession);
+      }
+    } catch (e) {
+      console.error('Error reading admin session from storage', e);
+    }
+    return null;
+  });
+
+  // Save admin accounts
+  useEffect(() => {
+    try {
+      localStorage.setItem(ADMIN_ACCOUNTS_KEY, JSON.stringify(adminAccounts));
+    } catch (e) {
+      console.error('Failed to sync admin accounts', e);
+    }
+  }, [adminAccounts]);
+
+  // Admin Login Action
+  const loginAdmin = (username: string, password: string, rememberMe = true): { success: boolean; message?: string } => {
+    const cleanUser = username.trim().toLowerCase();
+    const cleanPass = password.trim();
+
+    const account = adminAccounts.find(
+      acc => acc.username.toLowerCase() === cleanUser && acc.password === cleanPass
+    );
+
+    if (account) {
+      const userSession: AdminUser = {
+        username: account.username,
+        name: account.name,
+        role: account.role,
+        email: account.email,
+        lastLogin: new Date().toLocaleString('en-IN', {
+          dateStyle: 'medium',
+          timeStyle: 'short'
+        }),
+        avatarColor: account.avatarColor || 'teal'
+      };
+
+      setAdminUser(userSession);
+
+      try {
+        if (rememberMe) {
+          localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(userSession));
+        } else {
+          sessionStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(userSession));
+        }
+      } catch (e) {
+        console.error('Failed to store session', e);
+      }
+
+      return { success: true };
+    }
+
+    // Check if username exists with wrong password
+    const userExists = adminAccounts.some(acc => acc.username.toLowerCase() === cleanUser);
+    if (userExists) {
+      return { success: false, message: 'Invalid password. Please check your credentials and try again.' };
+    }
+
+    return { success: false, message: 'Admin username not recognized. Please use an authorized laboratory administrator account.' };
+  };
+
+  // Admin Logout Action
+  const logoutAdmin = () => {
+    setAdminUser(null);
+    try {
+      localStorage.removeItem(ADMIN_SESSION_KEY);
+      sessionStorage.removeItem(ADMIN_SESSION_KEY);
+    } catch (e) {
+      console.error('Failed to clear session', e);
+    }
+  };
+
+  // Change Admin Password Action
+  const changeAdminPassword = (username: string, currentPass: string, newPass: string): { success: boolean; message: string } => {
+    const cleanUser = username.trim().toLowerCase();
+    const targetAccIndex = adminAccounts.findIndex(acc => acc.username.toLowerCase() === cleanUser);
+
+    if (targetAccIndex === -1) {
+      return { success: false, message: 'Admin account not found.' };
+    }
+
+    if (adminAccounts[targetAccIndex].password !== currentPass.trim()) {
+      return { success: false, message: 'Current password does not match.' };
+    }
+
+    if (!newPass || newPass.trim().length < 6) {
+      return { success: false, message: 'New password must be at least 6 characters long.' };
+    }
+
+    const updatedAccounts = [...adminAccounts];
+    updatedAccounts[targetAccIndex] = {
+      ...updatedAccounts[targetAccIndex],
+      password: newPass.trim()
+    };
+
+    setAdminAccounts(updatedAccounts);
+    return { success: true, message: 'Admin password updated successfully!' };
+  };
+
+  const updateAdminAccounts = (accounts: AdminCredential[]) => {
+    setAdminAccounts(accounts);
+  };
 
   // Sync to localStorage on changes
   useEffect(() => {
@@ -477,6 +642,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateLabInfo,
         updateAnnouncement,
         updateDepartment,
+        // Admin Authentication
+        adminUser,
+        isAdminAuthenticated: Boolean(adminUser),
+        adminAccounts,
+        loginAdmin,
+        logoutAdmin,
+        changeAdminPassword,
+        updateAdminAccounts,
+        // System
         resetToDefaults,
         exportDataJSON,
         importDataJSON

@@ -13,7 +13,9 @@ import {
   Sparkles,
   ExternalLink,
   CheckCircle,
-  X
+  X,
+  LogOut,
+  UserCheck
 } from 'lucide-react';
 import { PageType, AdminTab, PatientReportRecord } from '../types';
 import { useData } from '../context/DataContext';
@@ -26,6 +28,7 @@ import { AdminBookingsTab } from './admin/AdminBookingsTab';
 import { AdminReportsTab } from './admin/AdminReportsTab';
 import { AdminSettingsTab } from './admin/AdminSettingsTab';
 import { ReportViewerModal } from '../components/ReportViewerModal';
+import { AdminLoginView } from './AdminLoginView';
 
 interface AdminDashboardViewProps {
   onNavigate: (page: PageType, param?: string) => void;
@@ -40,13 +43,38 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [activeViewingReport, setActiveViewingReport] = useState<PatientReportRecord | null>(null);
 
-  const { tests, packages, faqs, blogPosts, bookings, patientReports } = useData();
+  const { 
+    tests, 
+    packages, 
+    faqs, 
+    blogPosts, 
+    bookings, 
+    patientReports,
+    isAdminAuthenticated,
+    adminUser,
+    logoutAdmin
+  } = useData();
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => {
       setToastMessage(null);
     }, 3500);
+  };
+
+  // If user is not authenticated, render the dedicated Admin Login Page
+  if (!isAdminAuthenticated) {
+    return (
+      <AdminLoginView 
+        onNavigate={onNavigate} 
+        onLoginSuccess={() => showToast('Welcome to the Admin Portal')} 
+      />
+    );
+  }
+
+  const handleLogout = () => {
+    logoutAdmin();
+    showToast('Logged out of Admin Portal');
   };
 
   const navItems: { id: AdminTab; label: string; icon: React.FC<{ className?: string }>; count?: number }[] = [
@@ -113,19 +141,48 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             </div>
           </div>
 
-          {/* Quick links & Status */}
-          <div className="flex items-center gap-3">
-            <div className="hidden md:flex items-center gap-2 text-xs text-slate-300 bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700">
+          {/* User Session Info, Quick links & Logout */}
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            {/* User Profile Badge */}
+            {adminUser && (
+              <div className="hidden lg:flex items-center gap-2.5 bg-slate-800/80 border border-slate-700/80 px-3 py-1.5 rounded-xl">
+                <div className="w-7 h-7 rounded-lg bg-teal-500/20 border border-teal-500/30 flex items-center justify-center text-teal-300 font-bold text-xs">
+                  {adminUser.name.charAt(0)}
+                </div>
+                <div className="text-left">
+                  <div className="text-xs font-bold text-white leading-none">
+                    {adminUser.name}
+                  </div>
+                  <div className="text-[10px] text-teal-400 font-medium mt-0.5">
+                    {adminUser.role}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="hidden md:flex items-center gap-2 text-xs text-slate-300 bg-slate-800/80 px-2.5 py-1.5 rounded-xl border border-slate-700">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span className="text-[11px] font-medium">Database Synced</span>
+              <span className="text-[11px] font-medium">DB Synced</span>
             </div>
 
             <button
               onClick={() => onNavigate('home')}
-              className="px-3.5 py-1.5 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5"
+              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5"
+              title="Preview public patient portal"
             >
               <span>View Site</span>
               <ExternalLink className="w-3.5 h-3.5" />
+            </button>
+
+            {/* Logout Button */}
+            <button
+              onClick={handleLogout}
+              className="px-3 py-1.5 bg-rose-950/70 hover:bg-rose-900 text-rose-200 border border-rose-800/60 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+              title="Log out of Admin Portal"
+              id="btn-admin-logout"
+            >
+              <LogOut className="w-3.5 h-3.5 text-rose-400" />
+              <span className="hidden sm:inline">Log Out</span>
             </button>
           </div>
 

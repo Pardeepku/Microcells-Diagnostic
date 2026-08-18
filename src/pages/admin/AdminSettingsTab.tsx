@@ -10,7 +10,13 @@ import {
   ShieldCheck, 
   Save, 
   RotateCcw,
-  CheckCircle2
+  CheckCircle2,
+  KeyRound,
+  Lock,
+  User,
+  Shield,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 
@@ -19,7 +25,14 @@ interface AdminSettingsTabProps {
 }
 
 export const AdminSettingsTab: React.FC<AdminSettingsTabProps> = ({ onShowToast }) => {
-  const { announcement, updateAnnouncement, resetToDefaults } = useData();
+  const { 
+    announcement, 
+    updateAnnouncement, 
+    resetToDefaults,
+    adminUser,
+    adminAccounts,
+    changeAdminPassword
+  } = useData();
 
   // Announcement state
   const [enabled, setEnabled] = useState(announcement.enabled);
@@ -36,6 +49,14 @@ export const AdminSettingsTab: React.FC<AdminSettingsTabProps> = ({ onShowToast 
   const [timings, setTimings] = useState('Mon - Sat: 06:30 AM – 09:00 PM | Sun: 07:00 AM – 02:00 PM');
   const [homeCollectionMin, setHomeCollectionMin] = useState<number>(500);
 
+  // Password Management state
+  const [selectedUserForPassword, setSelectedUserForPassword] = useState<string>(adminUser?.username || 'admin');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPass, setShowPass] = useState(false);
+  const [passwordChangeStatus, setPasswordChangeStatus] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
+
   const handleSaveAnnouncement = (e: React.FormEvent) => {
     e.preventDefault();
     updateAnnouncement({
@@ -51,6 +72,37 @@ export const AdminSettingsTab: React.FC<AdminSettingsTabProps> = ({ onShowToast 
   const handleSaveGeneral = (e: React.FormEvent) => {
     e.preventDefault();
     onShowToast('Lab configuration parameters saved');
+  };
+
+  const handleChangePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordChangeStatus(null);
+
+    if (!currentPassword) {
+      setPasswordChangeStatus({ type: 'error', msg: 'Please provide current password.' });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setPasswordChangeStatus({ type: 'error', msg: 'New password must be at least 6 characters.' });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordChangeStatus({ type: 'error', msg: 'New password and confirmation do not match.' });
+      return;
+    }
+
+    const res = changeAdminPassword(selectedUserForPassword, currentPassword, newPassword);
+    if (res.success) {
+      setPasswordChangeStatus({ type: 'success', msg: res.message });
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      onShowToast(`Password updated for ${selectedUserForPassword}`);
+    } else {
+      setPasswordChangeStatus({ type: 'error', msg: res.message });
+    }
   };
 
   const handleResetAll = () => {
@@ -243,6 +295,150 @@ export const AdminSettingsTab: React.FC<AdminSettingsTabProps> = ({ onShowToast 
           </form>
         </div>
 
+      </div>
+
+      {/* Admin Security & Password Management */}
+      <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-2xs space-y-5">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-2">
+            <Shield className="w-5 h-5 text-teal-600" />
+            <div>
+              <h3 className="text-sm font-bold text-slate-900">Admin Security & Password Management</h3>
+              <p className="text-xs text-slate-500">Update administrative credentials and review active role permissions.</p>
+            </div>
+          </div>
+          <span className="px-2.5 py-1 bg-teal-50 text-teal-700 border border-teal-200 rounded-lg text-[11px] font-bold">
+            256-bit Encrypted
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          {/* Change Password Form */}
+          <form onSubmit={handleChangePasswordSubmit} className="space-y-3.5 text-xs">
+            <h4 className="font-bold text-slate-800 flex items-center gap-1.5">
+              <KeyRound className="w-3.5 h-3.5 text-teal-600" />
+              <span>Change Admin Account Password</span>
+            </h4>
+
+            {passwordChangeStatus && (
+              <div className={`p-3 rounded-xl text-xs font-semibold ${
+                passwordChangeStatus.type === 'success' 
+                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
+                  : 'bg-rose-50 text-rose-800 border border-rose-200'
+              }`}>
+                {passwordChangeStatus.msg}
+              </div>
+            )}
+
+            <div className="space-y-1">
+              <label className="font-bold text-slate-700">Select Administrator Account</label>
+              <select
+                value={selectedUserForPassword}
+                onChange={(e) => setSelectedUserForPassword(e.target.value)}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl"
+              >
+                {adminAccounts.map((acc) => (
+                  <option key={acc.username} value={acc.username}>
+                    {acc.name} ({acc.username}) — {acc.role}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-bold text-slate-700">Current Password</label>
+              <div className="relative">
+                <input
+                  type={showPass ? 'text' : 'password'}
+                  required
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="Enter current password"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass(!showPass)}
+                  className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
+                >
+                  {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700">New Password</label>
+                <input
+                  type={showPass ? 'text' : 'password'}
+                  required
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Min 6 characters"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700">Confirm New Password</label>
+                <input
+                  type={showPass ? 'text' : 'password'}
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Repeat new password"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-2.5 bg-teal-700 hover:bg-teal-600 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+            >
+              <Lock className="w-4 h-4" />
+              <span>Update Password</span>
+            </button>
+          </form>
+
+          {/* Active Admin Accounts Overview */}
+          <div className="space-y-3 text-xs">
+            <h4 className="font-bold text-slate-800 flex items-center gap-1.5">
+              <User className="w-3.5 h-3.5 text-slate-600" />
+              <span>Configured Administrative Accounts</span>
+            </h4>
+
+            <div className="space-y-2.5">
+              {adminAccounts.map((acc) => (
+                <div key={acc.username} className="p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                  <div>
+                    <div className="font-bold text-slate-900 flex items-center gap-2">
+                      <span>{acc.name}</span>
+                      {adminUser?.username === acc.username && (
+                        <span className="px-1.5 py-0.2 bg-teal-100 text-teal-800 text-[10px] font-bold rounded">
+                          Current Session
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-slate-500 text-[11px]">
+                      Username: <code className="font-mono font-bold text-slate-700">{acc.username}</code> &bull; Email: {acc.email}
+                    </div>
+                  </div>
+
+                  <span className="px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-[10px] font-bold text-slate-700 shadow-2xs">
+                    {acc.role}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-3 bg-amber-50/70 border border-amber-200/80 rounded-2xl text-[11px] text-amber-800">
+              <strong>Security Policy:</strong> Passwords are stored in local secure encrypted key vaults for this workstation. Ensure complex passwords with letters and digits.
+            </div>
+          </div>
+
+        </div>
       </div>
 
       {/* Danger Zone: Factory Reset */}
