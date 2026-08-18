@@ -44,7 +44,38 @@ export type AdminTab =
   | 'blog' 
   | 'bookings' 
   | 'reports' 
+  | 'images'
   | 'settings';
+
+export interface SiteImagesConfig {
+  homeHeroBanner: string;
+  homeDoctorPortrait: string;
+  homeAboutLab: string;
+  homeCollectionBanner: string;
+  qualityLabEquipment: string;
+  prescriptionBanner: string;
+  patientReportsBanner: string;
+  contactSupportBanner: string;
+  deptClinicalPathology: string;
+  deptHematology: string;
+  deptBiochemistry: string;
+  deptMicrobiology: string;
+  deptSerology: string;
+  deptPreventive: string;
+  doctorAnand: string;
+  doctorPriya: string;
+  doctorRajesh: string;
+  brandLogoUrl?: string;
+}
+
+export interface SiteImageMeta {
+  key: keyof SiteImagesConfig;
+  title: string;
+  section: 'Home & Landing' | 'About & Team' | 'Services & Departments' | 'Patient Portals & Banners';
+  description: string;
+  recommendedSize: string;
+  defaultUrl: string;
+}
 
 export interface AnnouncementSettings {
   enabled: boolean;

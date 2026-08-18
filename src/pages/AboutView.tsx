@@ -14,12 +14,14 @@ import {
 } from 'lucide-react';
 import { PageType } from '../types';
 import { LAB_INFO } from '../data/labData';
+import { useData } from '../context/DataContext';
 
 interface AboutViewProps {
   onNavigate: (page: PageType) => void;
 }
 
 export const AboutView: React.FC<AboutViewProps> = ({ onNavigate }) => {
+  const { siteImages } = useData();
   return (
     <div className="space-y-16 sm:space-y-20 py-8">
       
@@ -77,9 +79,10 @@ export const AboutView: React.FC<AboutViewProps> = ({ onNavigate }) => {
           <div className="lg:col-span-6">
             <div className="rounded-3xl overflow-hidden shadow-2xl border border-slate-200 relative">
               <img
-                src="https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=900&q=80"
+                src={siteImages.homeAboutLab || "https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=900&q=80"}
                 alt="Laboratory Infrastructure"
                 className="w-full h-80 sm:h-96 object-cover"
+                referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
               <div className="absolute bottom-6 left-6 right-6 p-4 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-100 text-xs">
@@ -183,41 +186,56 @@ export const AboutView: React.FC<AboutViewProps> = ({ onNavigate }) => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="p-6 rounded-3xl bg-white border border-slate-200 text-center space-y-3 shadow-xs">
-            <div className="w-20 h-20 rounded-full bg-blue-100 text-blue-900 font-bold text-xl flex items-center justify-center mx-auto">
-              MD
+          <div className="p-6 rounded-3xl bg-white border border-slate-200 text-center space-y-3 shadow-xs hover:shadow-md transition-shadow">
+            <div className="w-24 h-24 rounded-2xl overflow-hidden mx-auto border-2 border-teal-500/30 shadow-sm bg-slate-100">
+              <img
+                src={siteImages.doctorAnand || "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=600&q=80"}
+                alt="Dr. Anand Verma, MD"
+                className="w-full h-full object-cover object-top"
+                referrerPolicy="no-referrer"
+              />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-900">Clinical Pathology Board</h3>
-              <p className="text-xs text-teal-700 font-semibold">Consultant Pathologists</p>
+              <h3 className="text-base font-bold text-slate-900">Dr. Anand Verma, MD</h3>
+              <p className="text-xs text-teal-700 font-semibold">Chief Pathologist & Medical Director</p>
               <p className="text-[11px] text-slate-500 mt-2">
                 Overseeing microscopic morphology, cellular smear reviews, and critical biological correlations.
               </p>
             </div>
           </div>
 
-          <div className="p-6 rounded-3xl bg-white border border-slate-200 text-center space-y-3 shadow-xs">
-            <div className="w-20 h-20 rounded-full bg-teal-100 text-teal-900 font-bold text-xl flex items-center justify-center mx-auto">
-              QC
+          <div className="p-6 rounded-3xl bg-white border border-slate-200 text-center space-y-3 shadow-xs hover:shadow-md transition-shadow">
+            <div className="w-24 h-24 rounded-2xl overflow-hidden mx-auto border-2 border-teal-500/30 shadow-sm bg-slate-100">
+              <img
+                src={siteImages.doctorPriya || "https://images.unsplash.com/photo-1594824813571-638f02614d3f?auto=format&fit=crop&w=600&q=80"}
+                alt="Dr. Priya Sharma, MD"
+                className="w-full h-full object-cover object-top"
+                referrerPolicy="no-referrer"
+              />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-900">Quality Control Division</h3>
-              <p className="text-xs text-teal-700 font-semibold">Lead Biochemists & LIMS Officers</p>
+              <h3 className="text-base font-bold text-slate-900">Dr. Priya Sharma, MD</h3>
+              <p className="text-xs text-teal-700 font-semibold">Consultant Microbiologist & Infection Control</p>
               <p className="text-[11px] text-slate-500 mt-2">
-                Managing multi-point analyzer calibrations, internal QC standard deviations, and cold-chain compliance.
+                Specialist in bacterial cultures, antibiotic susceptibility titration, and PCR diagnostics.
               </p>
             </div>
           </div>
 
-          <div className="p-6 rounded-3xl bg-white border border-slate-200 text-center space-y-3 shadow-xs">
-            <div className="w-20 h-20 rounded-full bg-cyan-100 text-cyan-900 font-bold text-xl flex items-center justify-center mx-auto">
-              PH
+          <div className="p-6 rounded-3xl bg-white border border-slate-200 text-center space-y-3 shadow-xs hover:shadow-md transition-shadow">
+            <div className="w-24 h-24 rounded-2xl overflow-hidden mx-auto border-2 border-teal-500/30 shadow-sm bg-slate-100">
+              <img
+                src={siteImages.doctorRajesh || "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=600&q=80"}
+                alt="Dr. Rajesh Patel, PhD"
+                className="w-full h-full object-cover object-top"
+                referrerPolicy="no-referrer"
+              />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-900">Phlebotomy & Home Care</h3>
-              <p className="text-xs text-teal-700 font-semibold">Senior Phlebotomy Supervisors</p>
+              <h3 className="text-base font-bold text-slate-900">Dr. Rajesh Patel, PhD</h3>
+              <p className="text-xs text-teal-700 font-semibold">Head of Clinical Biochemistry & QC</p>
               <p className="text-[11px] text-slate-500 mt-2">
-                Ensuring gentle, painless venipuncture protocols and prompt doorstep sample logistics.
+                Managing multi-point analyzer calibrations, internal QC standard deviations, and cold-chain compliance.
               </p>
             </div>
           </div>

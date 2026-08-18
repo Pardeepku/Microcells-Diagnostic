@@ -4,7 +4,9 @@ import {
   DiagnosticDepartment, 
   BlogPost, 
   FAQItem, 
-  PatientReportRecord 
+  PatientReportRecord,
+  SiteImagesConfig,
+  SiteImageMeta
 } from '../types';
 
 export const LAB_INFO = {
@@ -1133,3 +1135,164 @@ export const TRUST_POINTS = [
     iconName: 'ShieldCheck'
   }
 ];
+
+export const DEFAULT_SITE_IMAGES: SiteImagesConfig = {
+  homeHeroBanner: 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=1000&q=80',
+  homeDoctorPortrait: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=1200&q=85',
+  homeAboutLab: 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=900&q=80',
+  homeCollectionBanner: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80',
+  qualityLabEquipment: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=900&q=80',
+  prescriptionBanner: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=800&q=80',
+  patientReportsBanner: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=800&q=80',
+  contactSupportBanner: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80',
+  deptClinicalPathology: 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=800&q=80',
+  deptHematology: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80',
+  deptBiochemistry: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=800&q=80',
+  deptMicrobiology: 'https://images.unsplash.com/photo-1576086213369-97a306d36557?auto=format&fit=crop&w=800&q=80',
+  deptSerology: 'https://images.unsplash.com/photo-1583912267670-6575ad4736f8?auto=format&fit=crop&w=800&q=80',
+  deptPreventive: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80',
+  doctorAnand: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=600&q=80',
+  doctorPriya: 'https://images.unsplash.com/photo-1594824813571-638f02614d3f?auto=format&fit=crop&w=600&q=80',
+  doctorRajesh: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=600&q=80',
+  brandLogoUrl: ''
+};
+
+export const SITE_IMAGE_REGISTRY: SiteImageMeta[] = [
+  {
+    key: 'homeHeroBanner',
+    title: 'Homepage Hero Banner Card',
+    section: 'Home & Landing',
+    description: 'The primary high-impact laboratory visual displayed on the right side of the main Home page hero section.',
+    recommendedSize: '1000 × 700 px (Landscape)',
+    defaultUrl: DEFAULT_SITE_IMAGES.homeHeroBanner
+  },
+  {
+    key: 'homeDoctorPortrait',
+    title: 'About Us Doctor & Pathologist Portrait',
+    section: 'Home & Landing',
+    description: 'Portrait of the consulting medical doctor / pathologist displayed in the About Us section on the Homepage.',
+    recommendedSize: '1200 × 1400 px (Portrait / Square)',
+    defaultUrl: DEFAULT_SITE_IMAGES.homeDoctorPortrait
+  },
+  {
+    key: 'homeAboutLab',
+    title: 'Reference Laboratory Infrastructure',
+    section: 'About & Team',
+    description: 'Main facility and automation equipment image on the About Us page.',
+    recommendedSize: '900 × 600 px (Landscape)',
+    defaultUrl: DEFAULT_SITE_IMAGES.homeAboutLab
+  },
+  {
+    key: 'homeCollectionBanner',
+    title: 'Home Sample Collection Service Banner',
+    section: 'Home & Landing',
+    description: 'Phlebotomist doorstep sample collection visual featured on Home page & Home Collection page.',
+    recommendedSize: '800 × 550 px (Landscape)',
+    defaultUrl: DEFAULT_SITE_IMAGES.homeCollectionBanner
+  },
+  {
+    key: 'qualityLabEquipment',
+    title: 'Quality & Advanced Automation Equipment',
+    section: 'About & Team',
+    description: 'High-throughput automated analyzers and testing equipment on Why Choose Us & About pages.',
+    recommendedSize: '900 × 600 px (Landscape)',
+    defaultUrl: DEFAULT_SITE_IMAGES.qualityLabEquipment
+  },
+  {
+    key: 'prescriptionBanner',
+    title: 'Doctor Prescription Upload Feature',
+    section: 'Patient Portals & Banners',
+    description: 'Prescription upload and express diagnostic ordering graphic.',
+    recommendedSize: '800 × 500 px (Landscape)',
+    defaultUrl: DEFAULT_SITE_IMAGES.prescriptionBanner
+  },
+  {
+    key: 'patientReportsBanner',
+    title: 'Patient Online Reports Portal Banner',
+    section: 'Patient Portals & Banners',
+    description: 'Background graphic for digital report downloads and barcode verification.',
+    recommendedSize: '800 × 500 px (Landscape)',
+    defaultUrl: DEFAULT_SITE_IMAGES.patientReportsBanner
+  },
+  {
+    key: 'contactSupportBanner',
+    title: 'Diagnostic Helpdesk & Central Lab Banner',
+    section: 'Patient Portals & Banners',
+    description: 'Diagnostic support desk and customer care visual on Contact page.',
+    recommendedSize: '800 × 500 px (Landscape)',
+    defaultUrl: DEFAULT_SITE_IMAGES.contactSupportBanner
+  },
+  {
+    key: 'deptClinicalPathology',
+    title: 'Department: Clinical Pathology',
+    section: 'Services & Departments',
+    description: 'Microscopic and biochemical fluid analysis department card on Services & Home pages.',
+    recommendedSize: '800 × 500 px (Landscape)',
+    defaultUrl: DEFAULT_SITE_IMAGES.deptClinicalPathology
+  },
+  {
+    key: 'deptHematology',
+    title: 'Department: Hematology & Coagulation',
+    section: 'Services & Departments',
+    description: 'Automated 5-part/6-part cell counters and coagulation profiles department visual.',
+    recommendedSize: '800 × 500 px (Landscape)',
+    defaultUrl: DEFAULT_SITE_IMAGES.deptHematology
+  },
+  {
+    key: 'deptBiochemistry',
+    title: 'Department: Clinical Biochemistry & Immunoassays',
+    section: 'Services & Departments',
+    description: 'Chemiluminescence (CLIA), enzyme kinetics, and metabolic panels department visual.',
+    recommendedSize: '800 × 500 px (Landscape)',
+    defaultUrl: DEFAULT_SITE_IMAGES.deptBiochemistry
+  },
+  {
+    key: 'deptMicrobiology',
+    title: 'Department: Microbiology & Infectious Diseases',
+    section: 'Services & Departments',
+    description: 'Automated blood cultures, bacterial identification, and sensitivity panels department visual.',
+    recommendedSize: '800 × 500 px (Landscape)',
+    defaultUrl: DEFAULT_SITE_IMAGES.deptMicrobiology
+  },
+  {
+    key: 'deptSerology',
+    title: 'Department: Serology & Immunology',
+    section: 'Services & Departments',
+    description: 'Autoimmune screening, viral markers, and antibody titers department visual.',
+    recommendedSize: '800 × 500 px (Landscape)',
+    defaultUrl: DEFAULT_SITE_IMAGES.deptSerology
+  },
+  {
+    key: 'deptPreventive',
+    title: 'Department: Preventive Health & Molecular Panels',
+    section: 'Services & Departments',
+    description: 'Executive wellness profiles, cancer markers, and specialized health panels visual.',
+    recommendedSize: '800 × 500 px (Landscape)',
+    defaultUrl: DEFAULT_SITE_IMAGES.deptPreventive
+  },
+  {
+    key: 'doctorAnand',
+    title: 'Doctor: Dr. Anand Verma (Chief Pathologist)',
+    section: 'About & Team',
+    description: 'Profile photo of Chief Pathologist & Laboratory Director.',
+    recommendedSize: '600 × 600 px (Square)',
+    defaultUrl: DEFAULT_SITE_IMAGES.doctorAnand
+  },
+  {
+    key: 'doctorPriya',
+    title: 'Doctor: Dr. Priya Sharma (Senior Microbiologist)',
+    section: 'About & Team',
+    description: 'Profile photo of Senior Consultant Microbiologist.',
+    recommendedSize: '600 × 600 px (Square)',
+    defaultUrl: DEFAULT_SITE_IMAGES.doctorPriya
+  },
+  {
+    key: 'doctorRajesh',
+    title: 'Doctor: Dr. Rajesh Kulkarni (Biochemistry Lead)',
+    section: 'About & Team',
+    description: 'Profile photo of Lead Clinical Biochemist & QC Officer.',
+    recommendedSize: '600 × 600 px (Square)',
+    defaultUrl: DEFAULT_SITE_IMAGES.doctorRajesh
+  }
+];
+

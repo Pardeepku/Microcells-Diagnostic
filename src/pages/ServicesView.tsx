@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { PageType, CartItem, TestItem, HealthPackage } from '../types';
 import { DIAGNOSTIC_DEPARTMENTS, POPULAR_TESTS } from '../data/labData';
+import { useData } from '../context/DataContext';
 
 interface ServicesViewProps {
   onNavigate: (page: PageType, param?: string) => void;
@@ -27,9 +28,19 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
   onBookTest,
   onViewTestDetails
 }) => {
+  const { siteImages } = useData();
   const [activeDeptId, setActiveDeptId] = useState<string>(DIAGNOSTIC_DEPARTMENTS[0].id);
 
   const selectedDept = DIAGNOSTIC_DEPARTMENTS.find(d => d.id === activeDeptId) || DIAGNOSTIC_DEPARTMENTS[0];
+
+  const deptImage = 
+    selectedDept.id === 'clinical-pathology' ? siteImages.deptClinicalPathology :
+    selectedDept.id === 'hematology' ? siteImages.deptHematology :
+    selectedDept.id === 'clinical-biochemistry' ? siteImages.deptBiochemistry :
+    selectedDept.id === 'microbiology' ? siteImages.deptMicrobiology :
+    selectedDept.id === 'serology-immunology' ? siteImages.deptSerology :
+    selectedDept.id === 'preventive-health' ? siteImages.deptPreventive :
+    selectedDept.imageUrl;
 
   // Get matching tests in this category
   const matchingTests = POPULAR_TESTS.filter(t => t.category === selectedDept.title);
@@ -110,9 +121,10 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
             <div className="lg:col-span-5">
               <div className="rounded-2xl overflow-hidden shadow-lg border border-slate-200 h-64 sm:h-72">
                 <img
-                  src={selectedDept.imageUrl}
+                  src={deptImage || selectedDept.imageUrl}
                   alt={selectedDept.title}
                   className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
                 />
               </div>
             </div>

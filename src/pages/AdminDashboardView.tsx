@@ -15,7 +15,8 @@ import {
   CheckCircle,
   X,
   LogOut,
-  UserCheck
+  UserCheck,
+  Image as ImageIcon
 } from 'lucide-react';
 import { PageType, AdminTab, PatientReportRecord } from '../types';
 import { useData } from '../context/DataContext';
@@ -26,6 +27,7 @@ import { AdminFAQsTab } from './admin/AdminFAQsTab';
 import { AdminBlogTab } from './admin/AdminBlogTab';
 import { AdminBookingsTab } from './admin/AdminBookingsTab';
 import { AdminReportsTab } from './admin/AdminReportsTab';
+import { AdminImagesTab } from './admin/AdminImagesTab';
 import { AdminSettingsTab } from './admin/AdminSettingsTab';
 import { ReportViewerModal } from '../components/ReportViewerModal';
 import { AdminLoginView } from './AdminLoginView';
@@ -85,6 +87,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     { id: 'blog', label: 'Health Blog', icon: BookOpen, count: blogPosts.length },
     { id: 'bookings', label: 'Appointments', icon: CalendarCheck, count: bookings.length },
     { id: 'reports', label: 'Diagnostic Reports', icon: FileText, count: patientReports.length },
+    { id: 'images', label: 'Site Images', icon: ImageIcon },
     { id: 'settings', label: 'Lab Settings', icon: Settings },
   ];
 
@@ -258,6 +261,10 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             onShowToast={showToast} 
             onViewReport={(report) => setActiveViewingReport(report)}
           />
+        )}
+
+        {activeTab === 'images' && (
+          <AdminImagesTab onShowToast={showToast} />
         )}
 
         {activeTab === 'settings' && (

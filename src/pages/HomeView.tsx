@@ -56,7 +56,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onOpenPrescription,
   onOpenWhatsApp
 }) => {
-  const { tests, packages, blogPosts, faqs } = useData();
+  const { tests, packages, blogPosts, faqs, siteImages } = useData();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedConcern, setSelectedConcern] = useState<string>('All');
   const [faqOpenId, setFaqOpenId] = useState<string | null>(faqs[0]?.id || null);
@@ -167,10 +167,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <div className="lg:col-span-5 relative">
               <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-slate-700/80 bg-slate-900 group">
                 <img
-                  src="https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=1000&q=80"
+                  src={siteImages.homeHeroBanner || "https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=1000&q=80"}
                   alt="Modern Pathology Laboratory Testing"
                   className="w-full h-80 sm:h-96 object-cover object-center group-hover:scale-105 transition-transform duration-700 opacity-90"
                   loading="eager"
+                  referrerPolicy="no-referrer"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
                 
@@ -328,22 +329,35 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           
           <div className="lg:col-span-6 relative">
-            <div className="relative rounded-3xl overflow-hidden shadow-xl border border-slate-200">
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-slate-200/90 bg-gradient-to-b from-blue-50 to-slate-100 group">
               <img
-                src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=900&q=80"
-                alt="Pathologist analyzing blood samples"
-                className="w-full h-80 sm:h-96 object-cover object-center"
+                src={siteImages.homeDoctorPortrait || "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=1200&q=85"}
+                alt="Lead Pathologist & Medical Doctor"
+                className="w-full h-84 sm:h-96 lg:h-[440px] object-cover object-top group-hover:scale-102 transition-transform duration-500"
+                referrerPolicy="no-referrer"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
               
-              <div className="absolute bottom-6 left-6 right-6 p-4 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-100 shadow-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-900 text-teal-300 flex items-center justify-center shrink-0">
-                    <ShieldCheck className="w-6 h-6" />
+              {/* Doctor Consultation Badge Top Right */}
+              <div className="absolute top-4 right-4 bg-blue-950/90 backdrop-blur-md border border-blue-800/80 text-white px-3.5 py-1.5 rounded-xl shadow-lg flex items-center gap-2 text-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="font-semibold text-[11px] text-teal-300">Doctor Verified Lab</span>
+              </div>
+
+              {/* Bottom Info Floating Card */}
+              <div className="absolute bottom-5 left-5 right-5 p-4 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-100/90 shadow-xl">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-xl bg-blue-900 text-teal-300 flex items-center justify-center shrink-0 shadow-sm">
+                      <ShieldCheck className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-900">Expert Medical & Pathology Supervision</h4>
+                      <p className="text-[11px] text-slate-500">Every report reviewed & signed by qualified doctors</p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-900">Standardized Laboratory Practices</h4>
-                    <p className="text-[11px] text-slate-500">Dual verification by qualified clinical pathologists</p>
+                  <div className="hidden sm:flex items-center text-[10px] font-bold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200/60 shrink-0">
+                    100% Verified
                   </div>
                 </div>
               </div>
@@ -425,6 +439,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {DIAGNOSTIC_DEPARTMENTS.map((dept) => {
+            const deptImage = 
+              dept.id === 'clinical-pathology' ? siteImages.deptClinicalPathology :
+              dept.id === 'hematology' ? siteImages.deptHematology :
+              dept.id === 'clinical-biochemistry' ? siteImages.deptBiochemistry :
+              dept.id === 'microbiology' ? siteImages.deptMicrobiology :
+              dept.id === 'serology-immunology' ? siteImages.deptSerology :
+              dept.id === 'preventive-health' ? siteImages.deptPreventive :
+              dept.imageUrl;
+
             return (
               <div
                 key={dept.id}
@@ -434,9 +457,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   {/* Department Image & Badge */}
                   <div className="relative rounded-2xl overflow-hidden h-40 mb-5 bg-slate-100">
                     <img
-                      src={dept.imageUrl}
+                      src={deptImage || dept.imageUrl}
                       alt={dept.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      referrerPolicy="no-referrer"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
                     
@@ -703,9 +727,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <div className="lg:col-span-5">
               <div className="rounded-2xl overflow-hidden border border-slate-700/80 shadow-2xl relative">
                 <img
-                  src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80"
+                  src={siteImages.homeCollectionBanner || "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80"}
                   alt="Home sample collection by phlebotomist"
                   className="w-full h-72 sm:h-80 object-cover object-center"
+                  referrerPolicy="no-referrer"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4 bg-slate-900/90 p-3 rounded-xl border border-slate-700 text-xs">

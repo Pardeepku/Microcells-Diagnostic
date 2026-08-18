@@ -9,7 +9,8 @@ import {
   DiagnosticDepartment,
   AnnouncementSettings,
   AdminUser,
-  AdminCredential
+  AdminCredential,
+  SiteImagesConfig
 } from '../types';
 import { 
   POPULAR_TESTS, 
@@ -18,7 +19,8 @@ import {
   FAQS, 
   SAMPLE_PATIENT_REPORTS, 
   LAB_INFO, 
-  DIAGNOSTIC_DEPARTMENTS 
+  DIAGNOSTIC_DEPARTMENTS,
+  DEFAULT_SITE_IMAGES
 } from '../data/labData';
 
 const STORAGE_KEY = 'microcells_diagnostic_store_v1';
@@ -153,6 +155,7 @@ interface LabDataStore {
   labInfo: typeof LAB_INFO;
   departments: DiagnosticDepartment[];
   announcement: AnnouncementSettings;
+  siteImages: SiteImagesConfig;
 }
 
 interface DataContextType extends LabDataStore {
@@ -193,6 +196,11 @@ interface DataContextType extends LabDataStore {
   updateAnnouncement: (announcement: Partial<AnnouncementSettings>) => void;
   updateDepartment: (id: string, dept: Partial<DiagnosticDepartment>) => void;
 
+  // Site Images & Media
+  updateSiteImage: (key: keyof SiteImagesConfig, url: string) => void;
+  updateAllSiteImages: (images: Partial<SiteImagesConfig>) => void;
+  resetSiteImages: () => void;
+
   // Admin Authentication & Access Control
   adminUser: AdminUser | null;
   isAdminAuthenticated: boolean;
@@ -225,7 +233,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           patientReports: Array.isArray(parsed.patientReports) && parsed.patientReports.length > 0 ? parsed.patientReports : SAMPLE_PATIENT_REPORTS,
           labInfo: parsed.labInfo ? { ...LAB_INFO, ...parsed.labInfo } : LAB_INFO,
           departments: Array.isArray(parsed.departments) && parsed.departments.length > 0 ? parsed.departments : DIAGNOSTIC_DEPARTMENTS,
-          announcement: parsed.announcement ? { ...INITIAL_ANNOUNCEMENT, ...parsed.announcement } : INITIAL_ANNOUNCEMENT
+          announcement: parsed.announcement ? { ...INITIAL_ANNOUNCEMENT, ...parsed.announcement } : INITIAL_ANNOUNCEMENT,
+          siteImages: parsed.siteImages ? { ...DEFAULT_SITE_IMAGES, ...parsed.siteImages } : DEFAULT_SITE_IMAGES
         };
       }
     } catch (e) {
@@ -241,7 +250,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       patientReports: SAMPLE_PATIENT_REPORTS,
       labInfo: LAB_INFO,
       departments: DIAGNOSTIC_DEPARTMENTS,
-      announcement: INITIAL_ANNOUNCEMENT
+      announcement: INITIAL_ANNOUNCEMENT,
+      siteImages: DEFAULT_SITE_IMAGES
     };
   });
 
@@ -568,6 +578,34 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }));
   };
 
+  // --- SITE IMAGES MANAGEMENT ---
+  const updateSiteImage = (key: keyof SiteImagesConfig, url: string) => {
+    setStore(prev => ({
+      ...prev,
+      siteImages: {
+        ...prev.siteImages,
+        [key]: url.trim()
+      }
+    }));
+  };
+
+  const updateAllSiteImages = (images: Partial<SiteImagesConfig>) => {
+    setStore(prev => ({
+      ...prev,
+      siteImages: {
+        ...prev.siteImages,
+        ...images
+      }
+    }));
+  };
+
+  const resetSiteImages = () => {
+    setStore(prev => ({
+      ...prev,
+      siteImages: DEFAULT_SITE_IMAGES
+    }));
+  };
+
   // --- BACKUP / RESTORE / RESET ---
   const resetToDefaults = () => {
     const defaultData: LabDataStore = {
@@ -579,7 +617,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       patientReports: SAMPLE_PATIENT_REPORTS,
       labInfo: LAB_INFO,
       departments: DIAGNOSTIC_DEPARTMENTS,
-      announcement: INITIAL_ANNOUNCEMENT
+      announcement: INITIAL_ANNOUNCEMENT,
+      siteImages: DEFAULT_SITE_IMAGES
     };
     setStore(defaultData);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultData));
@@ -602,7 +641,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           patientReports: Array.isArray(parsed.patientReports) ? parsed.patientReports : store.patientReports,
           labInfo: parsed.labInfo ? { ...store.labInfo, ...parsed.labInfo } : store.labInfo,
           departments: Array.isArray(parsed.departments) ? parsed.departments : store.departments,
-          announcement: parsed.announcement ? { ...store.announcement, ...parsed.announcement } : store.announcement
+          announcement: parsed.announcement ? { ...store.announcement, ...parsed.announcement } : store.announcement,
+          siteImages: parsed.siteImages ? { ...DEFAULT_SITE_IMAGES, ...parsed.siteImages } : store.siteImages
         };
         setStore(validated);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(validated));
@@ -642,6 +682,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateLabInfo,
         updateAnnouncement,
         updateDepartment,
+        // Site Images
+        updateSiteImage,
+        updateAllSiteImages,
+        resetSiteImages,
         // Admin Authentication
         adminUser,
         isAdminAuthenticated: Boolean(adminUser),

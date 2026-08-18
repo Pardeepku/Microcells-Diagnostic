@@ -44,7 +44,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenPrescription,
   onOpenWhatsApp
 }) => {
-  const { isAdminAuthenticated, adminUser, logoutAdmin } = useData();
+  const { isAdminAuthenticated, adminUser, logoutAdmin, siteImages } = useData();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -198,16 +198,25 @@ export const Header: React.FC<HeaderProps> = ({
             className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group select-none shrink-0"
             id="nav-brand-logo"
           >
-            {/* Custom Modern Laboratory Icon */}
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-blue-900 via-blue-800 to-teal-700 flex items-center justify-center text-white shadow-md group-hover:shadow-teal-500/20 transition-all shrink-0">
-              <div className="relative flex items-center justify-center">
-                <svg className="w-6 h-6 text-teal-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" stroke="#0ea5e9" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.6"/>
-                  <path d="M10 2v7.31M14 9.3V1.99M8.5 2h7M14 9.3a6.5 6.5 0 1 1-4 0M5.52 16h12.96" stroke="#ffffff" />
-                  <circle cx="12" cy="15" r="1.5" fill="#38bdf8" />
-                </svg>
+            {siteImages?.brandLogoUrl ? (
+              <img 
+                src={siteImages.brandLogoUrl} 
+                alt="Microcells Diagnostics Logo" 
+                className="h-10 sm:h-11 w-auto max-w-[140px] object-contain rounded-lg"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              /* Custom Modern Laboratory Icon */
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-blue-900 via-blue-800 to-teal-700 flex items-center justify-center text-white shadow-md group-hover:shadow-teal-500/20 transition-all shrink-0">
+                <div className="relative flex items-center justify-center">
+                  <svg className="w-6 h-6 text-teal-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" stroke="#0ea5e9" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.6"/>
+                    <path d="M10 2v7.31M14 9.3V1.99M8.5 2h7M14 9.3a6.5 6.5 0 1 1-4 0M5.52 16h12.96" stroke="#ffffff" />
+                    <circle cx="12" cy="15" r="1.5" fill="#38bdf8" />
+                  </svg>
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5 leading-tight">
