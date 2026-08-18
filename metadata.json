@@ -1,0 +1,6 @@
+{
+  "name": "Micro Cells Diagnostics Pvt. Ltd.",
+  "description": "Modern, professional healthcare website for Micro Cells Diagnostics Pvt. Ltd. pathology and diagnostic laboratory with full test catalog, health packages, home sample collection booking, online report portal, and health blogs.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
