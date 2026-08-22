@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, initializeFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import firebaseAppConfig from '../../firebase-applet-config.json';
 
@@ -23,8 +23,24 @@ export const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getA
 // Initialize Firebase Auth
 export const auth = getAuth(app);
 
-// Initialize Cloud Firestore (supporting custom database ID)
-export const db = databaseId ? getFirestore(app, databaseId) : getFirestore(app);
+// Initialize Cloud Firestore with auto-detect long polling for reliable connectivity in iframe & proxy environments
+function initFirestore() {
+  try {
+    return initializeFirestore(
+      app,
+      {
+        experimentalAutoDetectLongPolling: true,
+        ignoreUndefinedProperties: true
+      },
+      databaseId || '(default)'
+    );
+  } catch (e) {
+    console.info('Firestore already initialized or using default settings:', e);
+    return databaseId ? getFirestore(app, databaseId) : getFirestore(app);
+  }
+}
+
+export const db = initFirestore();
 
 // Initialize Firebase Storage
 export const storage = getStorage(app);

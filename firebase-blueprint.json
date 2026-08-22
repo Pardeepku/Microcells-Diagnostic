@@ -1,0 +1,184 @@
+{
+  "entities": {
+    "TestItem": {
+      "title": "Diagnostic Test",
+      "description": "Pathology or diagnostic lab test item catalog record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique test identifier" },
+        "name": { "type": "string", "description": "Name of the diagnostic test" },
+        "category": { "type": "string", "description": "Clinical department/category" },
+        "price": { "type": "number", "description": "Current discounted price in INR" },
+        "originalPrice": { "type": "number", "description": "MRP before discount in INR" },
+        "sampleType": { "type": "string", "description": "Required biological specimen" },
+        "fastingRequired": { "type": "boolean", "description": "Whether fasting is required" },
+        "fastingHours": { "type": "number", "description": "Fasting duration in hours" },
+        "reportTime": { "type": "string", "description": "Turnaround time for lab reports" },
+        "description": { "type": "string", "description": "Clinical description" },
+        "parameters": { "type": "array", "description": "Parameters included in the panel" },
+        "isPopular": { "type": "boolean", "description": "Flag for featured/popular test" },
+        "methodology": { "type": "string", "description": "Testing methodology" },
+        "clinicalSignificance": { "type": "string", "description": "Medical significance" }
+      },
+      "required": ["id", "name", "category", "price", "sampleType", "reportTime"]
+    },
+    "HealthPackage": {
+      "title": "Health Package",
+      "description": "Comprehensive health checkup package",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Package identifier" },
+        "name": { "type": "string", "description": "Package name" },
+        "tagline": { "type": "string", "description": "Marketing tagline" },
+        "price": { "type": "number", "description": "Price in INR" },
+        "originalPrice": { "type": "number", "description": "Original MRP" },
+        "discountPercent": { "type": "number", "description": "Discount percentage" },
+        "testCount": { "type": "number", "description": "Number of included tests/parameters" },
+        "fastingRequired": { "type": "boolean", "description": "Fasting requirement" },
+        "reportTime": { "type": "string", "description": "TAT for complete package" },
+        "sampleType": { "type": "string", "description": "Specimen types" },
+        "targetAudience": { "type": "string", "description": "Target demographic" },
+        "isPopular": { "type": "boolean", "description": "Featured package flag" },
+        "includes": { "type": "array", "description": "Included test panel names" }
+      },
+      "required": ["id", "name", "price", "testCount"]
+    },
+    "BookingRequest": {
+      "title": "Appointment Booking",
+      "description": "Patient home collection or lab visit booking request",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Internal booking ID" },
+        "referenceNumber": { "type": "string", "description": "Unique booking reference (e.g. MCD-2026-XXXXXX)" },
+        "patientName": { "type": "string", "description": "Patient full name" },
+        "age": { "type": "number", "description": "Patient age" },
+        "gender": { "type": "string", "enum": ["Male", "Female", "Other"] },
+        "mobile": { "type": "string", "description": "Primary contact mobile number" },
+        "email": { "type": "string", "description": "Patient email address" },
+        "serviceType": { "type": "string", "enum": ["home", "lab"] },
+        "address": { "type": "string", "description": "Home collection pickup address" },
+        "city": { "type": "string", "description": "City" },
+        "pincode": { "type": "string", "description": "Postal pincode" },
+        "preferredDate": { "type": "string", "description": "Appointment date" },
+        "preferredTimeSlot": { "type": "string", "description": "Selected time window" },
+        "selectedTests": { "type": "array", "description": "Selected individual tests" },
+        "selectedPackages": { "type": "array", "description": "Selected packages" },
+        "totalAmount": { "type": "number", "description": "Estimated total in INR" },
+        "status": { "type": "string", "enum": ["Confirmed", "Sample Collection Scheduled", "Processing", "Report Ready", "Cancelled"] },
+        "prescriptionAttached": { "type": "boolean", "description": "Whether doctor prescription was attached" },
+        "prescriptionFileName": { "type": "string", "description": "Prescription file name or URL" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" }
+      },
+      "required": ["referenceNumber", "patientName", "mobile", "serviceType", "preferredDate", "status"]
+    },
+    "PatientReportRecord": {
+      "title": "Patient Diagnostic Report",
+      "description": "Verified diagnostic test report record for patient portal lookup",
+      "type": "object",
+      "properties": {
+        "uhid": { "type": "string", "description": "Unique Health ID" },
+        "patientName": { "type": "string", "description": "Patient full name" },
+        "age": { "type": "number", "description": "Age" },
+        "gender": { "type": "string", "description": "Gender" },
+        "mobile": { "type": "string", "description": "Registered mobile" },
+        "testName": { "type": "string", "description": "Test panel title" },
+        "bookingDate": { "type": "string", "description": "Sample collection date" },
+        "reportDate": { "type": "string", "description": "Report release date" },
+        "status": { "type": "string", "enum": ["Completed", "In Progress", "Pending Sample"] },
+        "isAbnormal": { "type": "boolean", "description": "Flag for critical/abnormal values" },
+        "referringDoctor": { "type": "string", "description": "Prescribing physician" },
+        "department": { "type": "string", "description": "Laboratory department" },
+        "downloadUrl": { "type": "string", "description": "PDF download URL or report artifact" },
+        "results": { "type": "array", "description": "Individual analyte test results and reference ranges" }
+      },
+      "required": ["uhid", "patientName", "mobile", "testName", "status"]
+    },
+    "FAQItem": {
+      "title": "FAQ Item",
+      "description": "Diagnostic preparation and general query answer",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique FAQ identifier" },
+        "question": { "type": "string", "description": "Question text" },
+        "answer": { "type": "string", "description": "Detailed answer text" },
+        "category": { "type": "string", "description": "Category group" }
+      },
+      "required": ["id", "question", "answer", "category"]
+    },
+    "BlogPost": {
+      "title": "Health Blog Article",
+      "description": "Medical awareness and wellness article",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Article ID" },
+        "title": { "type": "string", "description": "Blog title" },
+        "excerpt": { "type": "string", "description": "Brief summary" },
+        "author": { "type": "string", "description": "Author name and credential" },
+        "readTime": { "type": "string", "description": "Estimated read time" },
+        "publishedDate": { "type": "string", "description": "Publish date" },
+        "category": { "type": "string", "description": "Health topic category" },
+        "imageUrl": { "type": "string", "description": "Cover banner image URL" },
+        "content": { "type": "string", "description": "Full markdown/HTML article body" }
+      },
+      "required": ["id", "title", "excerpt", "author", "publishedDate", "category"]
+    },
+    "SiteSettings": {
+      "title": "Laboratory Site Configuration",
+      "description": "CMS banners, branding images, and general lab information",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Setting document identifier" },
+        "images": { "type": "object", "description": "Branding and hero image asset URLs" },
+        "announcement": { "type": "object", "description": "Top notification bar settings" },
+        "labInfo": { "type": "object", "description": "Hospital/Lab address, phone, accreditations" }
+      }
+    },
+    "AdminCredential": {
+      "title": "Admin Credential",
+      "description": "Laboratory administrator profile",
+      "type": "object",
+      "properties": {
+        "username": { "type": "string", "description": "Admin username login handle" },
+        "name": { "type": "string", "description": "Staff member full name" },
+        "role": { "type": "string", "description": "Role in laboratory" },
+        "department": { "type": "string", "description": "Department assigned" },
+        "password": { "type": "string", "description": "Encrypted or secure password hash" }
+      },
+      "required": ["username", "name", "role"]
+    }
+  },
+  "firestore": {
+    "/tests/{testId}": {
+      "schema": "TestItem",
+      "description": "Diagnostic tests and investigation profiles"
+    },
+    "/healthPackages/{packageId}": {
+      "schema": "HealthPackage",
+      "description": "Preventive and diagnostic health checkup packages"
+    },
+    "/bookings/{bookingId}": {
+      "schema": "BookingRequest",
+      "description": "Patient home sample collection and lab appointment bookings"
+    },
+    "/patientReports/{uhid}": {
+      "schema": "PatientReportRecord",
+      "description": "Diagnostic test laboratory reports accessible by UHID/Mobile"
+    },
+    "/faqs/{faqId}": {
+      "schema": "FAQItem",
+      "description": "Frequently asked questions and patient guidance"
+    },
+    "/blogPosts/{postId}": {
+      "schema": "BlogPost",
+      "description": "Health and wellness awareness blog articles"
+    },
+    "/siteSettings/{settingId}": {
+      "schema": "SiteSettings",
+      "description": "Global website settings, header announcements, and media assets"
+    },
+    "/adminUsers/{userId}": {
+      "schema": "AdminCredential",
+      "description": "Authorized laboratory administrators and staff"
+    }
+  }
+}
