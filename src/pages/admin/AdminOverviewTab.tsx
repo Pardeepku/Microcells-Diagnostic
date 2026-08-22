@@ -16,7 +16,8 @@ import {
   TrendingUp, 
   ShieldAlert,
   Sparkles,
-  PhoneCall
+  PhoneCall,
+  KeyRound
 } from 'lucide-react';
 import { AdminTab, BookingRequest } from '../../types';
 import { useData } from '../../context/DataContext';
@@ -307,6 +308,23 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({
           </div>
 
           <div className="space-y-3">
+            {/* Change Password & Security Settings */}
+            <button
+              onClick={() => onSelectTab('settings')}
+              className="w-full p-3 rounded-2xl bg-teal-50/70 hover:bg-teal-50 border border-teal-200 hover:border-teal-400 text-teal-950 text-xs font-bold transition-all flex items-center justify-between"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-teal-600 shadow-2xs text-white">
+                  <KeyRound className="w-4 h-4" />
+                </div>
+                <div className="text-left">
+                  <p className="font-bold text-teal-900">Change Admin Password</p>
+                  <p className="text-[10px] text-teal-700 font-normal">Manage credentials & security policies</p>
+                </div>
+              </div>
+              <ArrowUpRight className="w-4 h-4 text-teal-600" />
+            </button>
+
             {/* Export JSON */}
             <button
               onClick={handleExport}

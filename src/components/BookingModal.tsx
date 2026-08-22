@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import { CartItem, BookingRequest } from '../types';
 import { POPULAR_TESTS, HEALTH_PACKAGES, LAB_INFO } from '../data/labData';
+import { useData } from '../context/DataContext';
+import { uploadPrescriptionFile } from '../services/storageService';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -35,6 +37,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   cartItems = [],
   defaultServiceType = 'home'
 }) => {
+  const { addBooking, tests, packages } = useData();
   const [serviceType, setServiceType] = useState<'home' | 'lab'>(defaultServiceType);
   const [patientName, setPatientName] = useState('');
   const [mobile, setMobile] = useState('');
@@ -117,7 +120,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
 
@@ -139,9 +142,17 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     }
 
     setIsSubmitting(true);
+    const refNumber = `MCD-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
 
-    setTimeout(() => {
-      const refNumber = `MCD-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
+    try {
+      if (prescriptionFile) {
+        try {
+          await uploadPrescriptionFile(prescriptionFile, refNumber);
+        } catch (uploadErr) {
+          console.warn('Prescription file upload fallback:', uploadErr);
+        }
+      }
+
       const bookingData: BookingRequest = {
         id: `bk-${Date.now()}`,
         referenceNumber: refNumber,
@@ -166,9 +177,37 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         status: 'Confirmed'
       };
 
+      addBooking(bookingData);
       setSubmittedBooking(bookingData);
+    } catch (err) {
+      console.error('Error adding booking:', err);
+      const fallbackBooking: BookingRequest = {
+        id: `bk-${Date.now()}`,
+        referenceNumber: refNumber,
+        patientName,
+        age: Number(age) || 30,
+        gender,
+        mobile,
+        email: email || `${mobile}@patient.microcells.com`,
+        serviceType,
+        address,
+        city: city || 'Central District',
+        pincode,
+        preferredDate,
+        preferredTimeSlot,
+        selectedTests: selectedItemsData.filter(i => i.type === 'test').map(i => i.name),
+        selectedPackages: selectedItemsData.filter(i => i.type === 'package').map(i => i.name),
+        totalAmount,
+        notes,
+        prescriptionAttached: !!prescriptionFile,
+        prescriptionFileName: prescriptionFile ? prescriptionFile.name : undefined,
+        createdAt: new Date().toISOString(),
+        status: 'Confirmed'
+      };
+      setSubmittedBooking(fallbackBooking);
+    } finally {
       setIsSubmitting(false);
-    }, 600);
+    }
   };
 
   return (

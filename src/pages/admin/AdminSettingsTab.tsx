@@ -74,7 +74,7 @@ export const AdminSettingsTab: React.FC<AdminSettingsTabProps> = ({ onShowToast 
     onShowToast('Lab configuration parameters saved');
   };
 
-  const handleChangePasswordSubmit = (e: React.FormEvent) => {
+  const handleChangePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setPasswordChangeStatus(null);
 
@@ -93,7 +93,7 @@ export const AdminSettingsTab: React.FC<AdminSettingsTabProps> = ({ onShowToast 
       return;
     }
 
-    const res = changeAdminPassword(selectedUserForPassword, currentPassword, newPassword);
+    const res = await Promise.resolve(changeAdminPassword(selectedUserForPassword, currentPassword, newPassword));
     if (res.success) {
       setPasswordChangeStatus({ type: 'success', msg: res.message });
       setCurrentPassword('');
@@ -105,9 +105,9 @@ export const AdminSettingsTab: React.FC<AdminSettingsTabProps> = ({ onShowToast 
     }
   };
 
-  const handleResetAll = () => {
+  const handleResetAll = async () => {
     if (window.confirm('Are you sure you want to reset all test catalog, packages, FAQs, and blog articles back to initial laboratory defaults? Any custom items will be restored.')) {
-      resetToDefaults();
+      await resetToDefaults();
       onShowToast('Reset all database records to initial default state');
     }
   };

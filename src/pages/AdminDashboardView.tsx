@@ -16,7 +16,8 @@ import {
   X,
   LogOut,
   UserCheck,
-  Image as ImageIcon
+  Image as ImageIcon,
+  KeyRound
 } from 'lucide-react';
 import { PageType, AdminTab, PatientReportRecord } from '../types';
 import { useData } from '../context/DataContext';
@@ -30,6 +31,7 @@ import { AdminReportsTab } from './admin/AdminReportsTab';
 import { AdminImagesTab } from './admin/AdminImagesTab';
 import { AdminSettingsTab } from './admin/AdminSettingsTab';
 import { ReportViewerModal } from '../components/ReportViewerModal';
+import { ChangePasswordModal } from '../components/ChangePasswordModal';
 import { AdminLoginView } from './AdminLoginView';
 
 interface AdminDashboardViewProps {
@@ -44,6 +46,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   const [activeTab, setActiveTab] = useState<AdminTab>(initialTab);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [activeViewingReport, setActiveViewingReport] = useState<PatientReportRecord | null>(null);
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
 
   const { 
     tests, 
@@ -168,6 +171,17 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
               <span className="text-[11px] font-medium">DB Synced</span>
             </div>
 
+            {/* Change Password Quick Button */}
+            <button
+              onClick={() => setIsChangePasswordModalOpen(true)}
+              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-teal-300 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer group"
+              title="Change Admin Password"
+              id="btn-admin-change-password-header"
+            >
+              <KeyRound className="w-3.5 h-3.5 text-teal-400 group-hover:rotate-12 transition-transform" />
+              <span className="hidden sm:inline">Change Password</span>
+            </button>
+
             <button
               onClick={() => onNavigate('home')}
               className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5"
@@ -278,6 +292,13 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         report={activeViewingReport} 
         isOpen={Boolean(activeViewingReport)}
         onClose={() => setActiveViewingReport(null)} 
+      />
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal 
+        isOpen={isChangePasswordModalOpen}
+        onClose={() => setIsChangePasswordModalOpen(false)}
+        onSuccess={(msg) => showToast(msg)}
       />
 
     </div>

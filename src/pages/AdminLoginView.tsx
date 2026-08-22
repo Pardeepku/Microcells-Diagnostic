@@ -12,8 +12,7 @@ import {
   FlaskConical, 
   Sparkles,
   Building2,
-  FileCheck2,
-  Info
+  FileCheck2
 } from 'lucide-react';
 import { PageType } from '../types';
 import { useData } from '../context/DataContext';
@@ -27,7 +26,7 @@ export const AdminLoginView: React.FC<AdminLoginViewProps> = ({
   onNavigate, 
   onLoginSuccess 
 }) => {
-  const { loginAdmin, adminAccounts } = useData();
+  const { loginAdmin } = useData();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -37,7 +36,7 @@ export const AdminLoginView: React.FC<AdminLoginViewProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [loginSuccessNotice, setLoginSuccessNotice] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
 
@@ -53,9 +52,8 @@ export const AdminLoginView: React.FC<AdminLoginViewProps> = ({
 
     setIsLoading(true);
 
-    // Simulate brief authentication handshake
-    setTimeout(() => {
-      const result = loginAdmin(username, password, rememberMe);
+    try {
+      const result = await Promise.resolve(loginAdmin(username, password, rememberMe));
       setIsLoading(false);
 
       if (result.success) {
@@ -70,13 +68,10 @@ export const AdminLoginView: React.FC<AdminLoginViewProps> = ({
       } else {
         setErrorMsg(result.message || 'Authentication failed. Please check your credentials.');
       }
-    }, 450);
-  };
-
-  const handleQuickFill = (accUser: string, accPass: string) => {
-    setUsername(accUser);
-    setPassword(accPass);
-    setErrorMsg(null);
+    } catch (err: any) {
+      setIsLoading(false);
+      setErrorMsg(err?.message || 'Authentication error. Please try again.');
+    }
   };
 
   return (
@@ -250,60 +245,18 @@ export const AdminLoginView: React.FC<AdminLoginViewProps> = ({
 
           </form>
 
-          {/* Quick Demo Credentials Assistant */}
-          <div className="pt-2 border-t border-slate-800">
-            <div className="flex items-center justify-between mb-2.5">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Info className="w-3.5 h-3.5 text-teal-400" />
-                Default Staff Credentials
-              </span>
-              <span className="text-[10px] text-teal-400 font-semibold bg-teal-950/60 border border-teal-800/40 px-2 py-0.5 rounded-md">
-                Click to autofill
-              </span>
-            </div>
-
-            <div className="space-y-2">
-              {adminAccounts.map((acc) => (
-                <button
-                  key={acc.username}
-                  type="button"
-                  onClick={() => handleQuickFill(acc.username, acc.password)}
-                  className="w-full p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/80 hover:border-teal-500/40 transition-all flex items-center justify-between text-left group"
-                >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-white group-hover:text-teal-300 transition-colors">
-                        {acc.name}
-                      </span>
-                      <span className="text-[10px] font-medium px-1.5 py-0.2 bg-slate-700 text-slate-300 rounded">
-                        {acc.role}
-                      </span>
-                    </div>
-                    <div className="text-[11px] font-mono text-slate-400 mt-0.5">
-                      User: <strong className="text-slate-200">{acc.username}</strong> | Pass: <strong className="text-slate-200">{acc.password}</strong>
-                    </div>
-                  </div>
-
-                  <span className="text-[10px] font-bold text-teal-400 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pl-2">
-                    Use &rarr;
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {/* Link to External LIS Portal */}
-            <div className="mt-4 pt-3 border-t border-slate-800/80 text-center">
-              <a
-                href="https://emidas.co.in:8890/pages/Login.aspx"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs text-sky-400 hover:text-sky-300 font-medium transition-colors"
-                id="link-login-lis-portal"
-              >
-                <span>Looking for Laboratory Information System? Open LIS Portal</span>
-                <span className="text-sky-300 font-bold">&rarr;</span>
-              </a>
-            </div>
+          {/* Link to External LIS Portal */}
+          <div className="pt-3 border-t border-slate-800/80 text-center">
+            <a
+              href="https://emidas.co.in:8890/pages/Login.aspx"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs text-sky-400 hover:text-sky-300 font-medium transition-colors"
+              id="link-login-lis-portal"
+            >
+              <span>Looking for Laboratory Information System? Open LIS Portal</span>
+              <span className="text-sky-300 font-bold">&rarr;</span>
+            </a>
           </div>
 
         </div>

@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import { CartItem, PageType } from '../types';
 import { POPULAR_TESTS, HEALTH_PACKAGES, LAB_INFO } from '../data/labData';
+import { useData } from '../context/DataContext';
+import { uploadPrescriptionFile } from '../services/storageService';
 
 interface BookTestViewProps {
   onNavigate: (page: PageType) => void;
@@ -35,6 +37,7 @@ export const BookTestView: React.FC<BookTestViewProps> = ({
   onRemoveFromCart,
   onClearCart
 }) => {
+  const { addBooking, tests, packages } = useData();
   const [serviceType, setServiceType] = useState<'home' | 'lab'>('home');
   const [patientName, setPatientName] = useState('');
   const [age, setAge] = useState('');
@@ -70,7 +73,7 @@ export const BookTestView: React.FC<BookTestViewProps> = ({
 
   const handleAddQuickTest = () => {
     if (!selectedAddonTest) return;
-    const test = POPULAR_TESTS.find(t => t.id === selectedAddonTest);
+    const test = (tests && tests.length > 0 ? tests : POPULAR_TESTS).find(t => t.id === selectedAddonTest);
     if (test) {
       onAddToCart({
         id: test.id,
@@ -85,7 +88,7 @@ export const BookTestView: React.FC<BookTestViewProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (cart.length === 0 && !prescriptionFile) {
       alert('Please select at least one test/package or attach a doctor’s prescription.');
@@ -93,12 +96,55 @@ export const BookTestView: React.FC<BookTestViewProps> = ({
     }
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    const newRef = `MC-APT-${Math.floor(100000 + Math.random() * 900000)}`;
+
+    try {
+      let uploadedFileName = prescriptionFile ? prescriptionFile.name : undefined;
+      if (prescriptionFile) {
+        try {
+          await uploadPrescriptionFile(prescriptionFile, newRef);
+        } catch (uploadErr) {
+          console.warn('Prescription storage upload fallback:', uploadErr);
+        }
+      }
+
+      const selectedTestNames = cart.filter(c => c.type === 'test').map(c => c.name);
+      const selectedPkgNames = cart.filter(c => c.type === 'package').map(c => c.name);
+
+      addBooking({
+        referenceNumber: newRef,
+        patientName: patientName.trim(),
+        age: Number(age) || 30,
+        gender: gender as 'Male' | 'Female' | 'Other',
+        mobile: mobile.trim(),
+        email: email.trim() || `${mobile.trim()}@patient.microcells.com`,
+        serviceType,
+        address: serviceType === 'home' ? address.trim() : undefined,
+        city: 'City Central',
+        pincode: pincode.trim() || undefined,
+        preferredDate: preferredDate || new Date().toISOString().split('T')[0],
+        preferredTimeSlot,
+        selectedTests: selectedTestNames,
+        selectedPackages: selectedPkgNames,
+        totalAmount: estimatedTotal,
+        notes: additionalNotes.trim() || undefined,
+        prescriptionAttached: Boolean(prescriptionFile),
+        prescriptionFileName: uploadedFileName,
+        status: 'Confirmed'
+      });
+
+      setBookingRef(newRef);
       setIsSubmitted(true);
-      setBookingRef(`MC-APT-${Math.floor(100000 + Math.random() * 900000)}`);
       onClearCart();
-    }, 700);
+    } catch (err) {
+      console.error('Error submitting booking:', err);
+      // Fallback
+      setBookingRef(newRef);
+      setIsSubmitted(true);
+      onClearCart();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

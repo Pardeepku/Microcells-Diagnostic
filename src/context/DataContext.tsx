@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { 
   TestItem, 
   HealthPackage, 
@@ -22,120 +22,17 @@ import {
   DIAGNOSTIC_DEPARTMENTS,
   DEFAULT_SITE_IMAGES
 } from '../data/labData';
+import * as testService from '../services/testService';
+import * as packageService from '../services/packageService';
+import * as faqService from '../services/faqService';
+import * as blogService from '../services/blogService';
+import * as bookingService from '../services/bookingService';
+import * as reportService from '../services/patientReportService';
+import * as siteService from '../services/siteSettingsService';
+import * as authService from '../services/authService';
+import { seedInitialFirestoreData, checkAndMigrateLegacyLocalStorage } from '../services/migrationService';
 
-const STORAGE_KEY = 'microcells_diagnostic_store_v1';
-const ADMIN_ACCOUNTS_KEY = 'microcells_admin_accounts_v1';
 const ADMIN_SESSION_KEY = 'microcells_admin_session_v1';
-
-const DEFAULT_ADMIN_ACCOUNTS: AdminCredential[] = [
-  {
-    username: 'admin',
-    password: 'admin123',
-    name: 'Lab Administrator',
-    role: 'Super Administrator',
-    email: 'admin@microcells.com',
-    avatarColor: 'teal'
-  },
-  {
-    username: 'dr.pathology',
-    password: 'microcells2026',
-    name: 'Dr. Anand Verma, MD',
-    role: 'Chief Pathologist',
-    email: 'anand.verma@microcells.com',
-    avatarColor: 'indigo'
-  },
-  {
-    username: 'labmanager',
-    password: 'manager123',
-    name: 'Pooja Iyer',
-    role: 'Lab Manager',
-    email: 'pooja.iyer@microcells.com',
-    avatarColor: 'amber'
-  }
-];
-
-const INITIAL_BOOKINGS: BookingRequest[] = [
-  {
-    id: 'bk-1001',
-    referenceNumber: 'MCD-2026-804192',
-    patientName: 'Rameshwar Dayal Sharma',
-    age: 62,
-    gender: 'Male',
-    mobile: '9876543210',
-    email: 'rameshwar.sharma@example.com',
-    serviceType: 'home',
-    address: 'Flat 402, Green Meadows Residency, Sector 14',
-    city: 'City Central',
-    pincode: '400001',
-    preferredDate: '2026-08-19',
-    preferredTimeSlot: '07:30 AM – 08:30 AM',
-    selectedTests: ['HbA1c (Glycated Hemoglobin)', 'Lipid Profile (Cholesterol Panel)'],
-    selectedPackages: ['Senior Citizen Comprehensive Care'],
-    totalAmount: 3200,
-    notes: 'Elderly patient with mild mobility issues. Please carry butterfly needle.',
-    prescriptionAttached: true,
-    prescriptionFileName: 'dr_sharma_prescription.pdf',
-    createdAt: '2026-08-18 09:30 AM',
-    status: 'Sample Collection Scheduled'
-  },
-  {
-    id: 'bk-1002',
-    referenceNumber: 'MCD-2026-772109',
-    patientName: 'Sunita Mehra',
-    age: 44,
-    gender: 'Female',
-    mobile: '9812345678',
-    email: 'sunita.mehra@example.com',
-    serviceType: 'lab',
-    preferredDate: '2026-08-18',
-    preferredTimeSlot: '10:00 AM – 11:00 AM',
-    selectedTests: ['Thyroid Profile Total (T3, T4, TSH)', 'Vitamin D 25-Hydroxy (Total)'],
-    selectedPackages: [],
-    totalAmount: 1650,
-    notes: 'Fasting completed since 10 PM yesterday.',
-    createdAt: '2026-08-18 08:15 AM',
-    status: 'Confirmed'
-  },
-  {
-    id: 'bk-1003',
-    referenceNumber: 'MCD-2026-651904',
-    patientName: 'Aakash Singhania',
-    age: 29,
-    gender: 'Male',
-    mobile: '9798765432',
-    email: 'aakash.singh@example.com',
-    serviceType: 'home',
-    address: 'B-12, Orchid Towers, Healthcare Avenue',
-    city: 'City Central',
-    pincode: '400001',
-    preferredDate: '2026-08-17',
-    preferredTimeSlot: '07:00 AM – 08:00 AM',
-    selectedTests: ['Complete Blood Count (CBC) with ESR'],
-    selectedPackages: ['Executive Full Body Health Package'],
-    totalAmount: 2850,
-    notes: '',
-    createdAt: '2026-08-17 06:45 PM',
-    status: 'Processing'
-  },
-  {
-    id: 'bk-1004',
-    referenceNumber: 'MCD-2026-541298',
-    patientName: 'Pooja Bhatia',
-    age: 35,
-    gender: 'Female',
-    mobile: '9822334455',
-    email: 'pooja.bhatia@example.com',
-    serviceType: 'lab',
-    preferredDate: '2026-08-17',
-    preferredTimeSlot: '09:00 AM – 10:00 AM',
-    selectedTests: ['Fasting Blood Sugar (Glucose Fasting)', 'HbA1c (Glycated Hemoglobin)'],
-    selectedPackages: [],
-    totalAmount: 570,
-    notes: 'Routine quarterly diabetic checkup.',
-    createdAt: '2026-08-17 08:00 AM',
-    status: 'Report Ready'
-  }
-];
 
 const INITIAL_ANNOUNCEMENT: AnnouncementSettings = {
   enabled: true,
@@ -145,7 +42,7 @@ const INITIAL_ANNOUNCEMENT: AnnouncementSettings = {
   linkPage: 'packages'
 };
 
-interface LabDataStore {
+interface DataContextType {
   tests: TestItem[];
   packages: HealthPackage[];
   faqs: FAQItem[];
@@ -156,9 +53,8 @@ interface LabDataStore {
   departments: DiagnosticDepartment[];
   announcement: AnnouncementSettings;
   siteImages: SiteImagesConfig;
-}
+  isFirebaseLoading: boolean;
 
-interface DataContextType extends LabDataStore {
   // Tests CRUD
   addTest: (test: Omit<TestItem, 'id'>) => TestItem;
   updateTest: (id: string, test: Partial<TestItem>) => void;
@@ -205,72 +101,36 @@ interface DataContextType extends LabDataStore {
   adminUser: AdminUser | null;
   isAdminAuthenticated: boolean;
   adminAccounts: AdminCredential[];
-  loginAdmin: (username: string, password: string, rememberMe?: boolean) => { success: boolean; message?: string };
+  loginAdmin: (username: string, password: string, rememberMe?: boolean) => { success: boolean; message?: string } | Promise<{ success: boolean; message?: string }>;
   logoutAdmin: () => void;
-  changeAdminPassword: (username: string, currentPass: string, newPass: string) => { success: boolean; message: string };
+  changeAdminPassword: (username: string, currentPass: string, newPass: string) => { success: boolean; message: string } | Promise<{ success: boolean; message: string }>;
   updateAdminAccounts: (accounts: AdminCredential[]) => void;
 
-  // System
-  resetToDefaults: () => void;
+  // System & Migration
+  resetToDefaults: () => Promise<void>;
   exportDataJSON: () => string;
-  importDataJSON: (jsonString: string) => boolean;
+  importDataJSON: (jsonString: string) => boolean | Promise<boolean>;
+  seedDatabase: (force?: boolean) => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | null>(null);
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [store, setStore] = useState<LabDataStore>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        return {
-          tests: Array.isArray(parsed.tests) && parsed.tests.length > 0 ? parsed.tests : POPULAR_TESTS,
-          packages: Array.isArray(parsed.packages) && parsed.packages.length > 0 ? parsed.packages : HEALTH_PACKAGES,
-          faqs: Array.isArray(parsed.faqs) && parsed.faqs.length > 0 ? parsed.faqs : FAQS,
-          blogPosts: Array.isArray(parsed.blogPosts) && parsed.blogPosts.length > 0 ? parsed.blogPosts : BLOG_POSTS,
-          bookings: Array.isArray(parsed.bookings) ? parsed.bookings : INITIAL_BOOKINGS,
-          patientReports: Array.isArray(parsed.patientReports) && parsed.patientReports.length > 0 ? parsed.patientReports : SAMPLE_PATIENT_REPORTS,
-          labInfo: parsed.labInfo ? { ...LAB_INFO, ...parsed.labInfo } : LAB_INFO,
-          departments: Array.isArray(parsed.departments) && parsed.departments.length > 0 ? parsed.departments : DIAGNOSTIC_DEPARTMENTS,
-          announcement: parsed.announcement ? { ...INITIAL_ANNOUNCEMENT, ...parsed.announcement } : INITIAL_ANNOUNCEMENT,
-          siteImages: parsed.siteImages ? { ...DEFAULT_SITE_IMAGES, ...parsed.siteImages } : DEFAULT_SITE_IMAGES
-        };
-      }
-    } catch (e) {
-      console.error('Error initializing DataContext from localStorage', e);
-    }
+  // State variables with immediate rich defaults from labData for instantaneous first-paint
+  const [tests, setTests] = useState<TestItem[]>(POPULAR_TESTS);
+  const [packages, setPackages] = useState<HealthPackage[]>(HEALTH_PACKAGES);
+  const [faqs, setFaqs] = useState<FAQItem[]>(FAQS);
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(BLOG_POSTS);
+  const [bookings, setBookings] = useState<BookingRequest[]>([]);
+  const [patientReports, setPatientReports] = useState<PatientReportRecord[]>(SAMPLE_PATIENT_REPORTS);
+  const [labInfo, setLabInfo] = useState<typeof LAB_INFO>(LAB_INFO);
+  const [departments, setDepartments] = useState<DiagnosticDepartment[]>(DIAGNOSTIC_DEPARTMENTS);
+  const [announcement, setAnnouncement] = useState<AnnouncementSettings>(INITIAL_ANNOUNCEMENT);
+  const [siteImages, setSiteImages] = useState<SiteImagesConfig>(DEFAULT_SITE_IMAGES);
+  const [adminAccounts, setAdminAccounts] = useState<AdminCredential[]>(authService.DEFAULT_ADMIN_ACCOUNTS);
+  const [isFirebaseLoading, setIsFirebaseLoading] = useState(true);
 
-    return {
-      tests: POPULAR_TESTS,
-      packages: HEALTH_PACKAGES,
-      faqs: FAQS,
-      blogPosts: BLOG_POSTS,
-      bookings: INITIAL_BOOKINGS,
-      patientReports: SAMPLE_PATIENT_REPORTS,
-      labInfo: LAB_INFO,
-      departments: DIAGNOSTIC_DEPARTMENTS,
-      announcement: INITIAL_ANNOUNCEMENT,
-      siteImages: DEFAULT_SITE_IMAGES
-    };
-  });
-
-  // Admin Authentication State
-  const [adminAccounts, setAdminAccounts] = useState<AdminCredential[]>(() => {
-    try {
-      const savedAccounts = localStorage.getItem(ADMIN_ACCOUNTS_KEY);
-      if (savedAccounts) {
-        const parsed = JSON.parse(savedAccounts);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
-        }
-      }
-    } catch (e) {
-      console.error('Error reading admin accounts from storage', e);
-    }
-    return DEFAULT_ADMIN_ACCOUNTS;
-  });
-
+  // Admin Session State
   const [adminUser, setAdminUser] = useState<AdminUser | null>(() => {
     try {
       const savedSession = localStorage.getItem(ADMIN_SESSION_KEY) || sessionStorage.getItem(ADMIN_SESSION_KEY);
@@ -278,229 +138,267 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return JSON.parse(savedSession);
       }
     } catch (e) {
-      console.error('Error reading admin session from storage', e);
+      console.error('Error reading admin session', e);
     }
     return null;
   });
 
-  // Save admin accounts
+  // 1. Initial Firestore Seeding & Legacy Data Migration
   useEffect(() => {
-    try {
-      localStorage.setItem(ADMIN_ACCOUNTS_KEY, JSON.stringify(adminAccounts));
-    } catch (e) {
-      console.error('Failed to sync admin accounts', e);
-    }
-  }, [adminAccounts]);
-
-  // Admin Login Action
-  const loginAdmin = (username: string, password: string, rememberMe = true): { success: boolean; message?: string } => {
-    const cleanUser = username.trim().toLowerCase();
-    const cleanPass = password.trim();
-
-    const account = adminAccounts.find(
-      acc => acc.username.toLowerCase() === cleanUser && acc.password === cleanPass
-    );
-
-    if (account) {
-      const userSession: AdminUser = {
-        username: account.username,
-        name: account.name,
-        role: account.role,
-        email: account.email,
-        lastLogin: new Date().toLocaleString('en-IN', {
-          dateStyle: 'medium',
-          timeStyle: 'short'
-        }),
-        avatarColor: account.avatarColor || 'teal'
-      };
-
-      setAdminUser(userSession);
-
+    const initializeDatabase = async () => {
       try {
-        if (rememberMe) {
-          localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(userSession));
-        } else {
-          sessionStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(userSession));
-        }
-      } catch (e) {
-        console.error('Failed to store session', e);
+        await seedInitialFirestoreData();
+        await checkAndMigrateLegacyLocalStorage();
+      } catch (err) {
+        console.warn('Initial Firestore sync initialization:', err);
+      } finally {
+        setIsFirebaseLoading(false);
       }
-
-      return { success: true };
-    }
-
-    // Check if username exists with wrong password
-    const userExists = adminAccounts.some(acc => acc.username.toLowerCase() === cleanUser);
-    if (userExists) {
-      return { success: false, message: 'Invalid password. Please check your credentials and try again.' };
-    }
-
-    return { success: false, message: 'Admin username not recognized. Please use an authorized laboratory administrator account.' };
-  };
-
-  // Admin Logout Action
-  const logoutAdmin = () => {
-    setAdminUser(null);
-    try {
-      localStorage.removeItem(ADMIN_SESSION_KEY);
-      sessionStorage.removeItem(ADMIN_SESSION_KEY);
-    } catch (e) {
-      console.error('Failed to clear session', e);
-    }
-  };
-
-  // Change Admin Password Action
-  const changeAdminPassword = (username: string, currentPass: string, newPass: string): { success: boolean; message: string } => {
-    const cleanUser = username.trim().toLowerCase();
-    const targetAccIndex = adminAccounts.findIndex(acc => acc.username.toLowerCase() === cleanUser);
-
-    if (targetAccIndex === -1) {
-      return { success: false, message: 'Admin account not found.' };
-    }
-
-    if (adminAccounts[targetAccIndex].password !== currentPass.trim()) {
-      return { success: false, message: 'Current password does not match.' };
-    }
-
-    if (!newPass || newPass.trim().length < 6) {
-      return { success: false, message: 'New password must be at least 6 characters long.' };
-    }
-
-    const updatedAccounts = [...adminAccounts];
-    updatedAccounts[targetAccIndex] = {
-      ...updatedAccounts[targetAccIndex],
-      password: newPass.trim()
     };
+    initializeDatabase();
+  }, []);
 
-    setAdminAccounts(updatedAccounts);
-    return { success: true, message: 'Admin password updated successfully!' };
-  };
-
-  const updateAdminAccounts = (accounts: AdminCredential[]) => {
-    setAdminAccounts(accounts);
-  };
-
-  // Sync to localStorage on changes
+  // 2. Real-time Firestore Subscriptions
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
-    } catch (e) {
-      console.error('Failed to sync data store to localStorage', e);
-    }
-  }, [store]);
+    // Tests subscription
+    const unsubTests = testService.subscribeToTests((data) => {
+      if (data && data.length > 0) {
+        setTests(data);
+      }
+    });
+
+    // Packages subscription
+    const unsubPackages = packageService.subscribeToPackages((data) => {
+      if (data && data.length > 0) {
+        setPackages(data);
+      }
+    });
+
+    // FAQs subscription
+    const unsubFaqs = faqService.subscribeToFAQs((data) => {
+      if (data && data.length > 0) {
+        setFaqs(data);
+      }
+    });
+
+    // Blog posts subscription
+    const unsubBlog = blogService.subscribeToBlogPosts((data) => {
+      if (data && data.length > 0) {
+        setBlogPosts(data);
+      }
+    });
+
+    // Bookings subscription
+    const unsubBookings = bookingService.subscribeToBookings((data) => {
+      if (data) {
+        setBookings(data);
+      }
+    });
+
+    // Patient Reports subscription
+    const unsubReports = reportService.subscribeToPatientReports((data) => {
+      if (data && data.length > 0) {
+        setPatientReports(data);
+      }
+    });
+
+    // Site Images subscription
+    const unsubImages = siteService.subscribeToSiteImages((data) => {
+      if (data) {
+        setSiteImages((prev) => ({ ...prev, ...data }));
+      }
+    });
+
+    // Announcement subscription
+    const unsubAnnouncement = siteService.subscribeToAnnouncement((data) => {
+      if (data) {
+        setAnnouncement((prev) => ({ ...prev, ...data }));
+      }
+    });
+
+    // Lab Info subscription
+    const unsubLabInfo = siteService.subscribeToLabInfo((data) => {
+      if (data) {
+        setLabInfo((prev) => ({ ...prev, ...data }));
+      }
+    });
+
+    // Departments subscription
+    const unsubDepartments = siteService.subscribeToDepartments((data) => {
+      if (data && data.length > 0) {
+        setDepartments(data);
+      }
+    });
+
+    // Load admin accounts
+    authService.getAdminAccounts().then((accounts) => {
+      if (accounts && accounts.length > 0) {
+        setAdminAccounts(accounts);
+      }
+    });
+
+    return () => {
+      unsubTests();
+      unsubPackages();
+      unsubFaqs();
+      unsubBlog();
+      unsubBookings();
+      unsubReports();
+      unsubImages();
+      unsubAnnouncement();
+      unsubLabInfo();
+      unsubDepartments();
+    };
+  }, []);
 
   // --- TESTS CRUD ---
   const addTest = (newTestData: Omit<TestItem, 'id'>): TestItem => {
     const id = `test-${Date.now()}`;
     const newTest: TestItem = { ...newTestData, id };
-    setStore(prev => ({
-      ...prev,
-      tests: [newTest, ...prev.tests]
-    }));
+    
+    // Optimistic UI update
+    setTests((prev) => [newTest, ...prev]);
+    
+    // Firestore persistence
+    testService.createTest(newTestData, id).catch((err) => {
+      console.error('Error creating test in Firestore:', err);
+    });
+    
     return newTest;
   };
 
   const updateTest = (id: string, patch: Partial<TestItem>) => {
-    setStore(prev => ({
-      ...prev,
-      tests: prev.tests.map(t => t.id === id ? { ...t, ...patch } : t)
-    }));
+    // Optimistic UI update
+    setTests((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
+    
+    // Firestore persistence
+    testService.updateTest(id, patch).catch((err) => {
+      console.error('Error updating test in Firestore:', err);
+    });
   };
 
   const deleteTest = (id: string) => {
-    setStore(prev => ({
-      ...prev,
-      tests: prev.tests.filter(t => t.id !== id)
-    }));
+    // Optimistic UI update
+    setTests((prev) => prev.filter((t) => t.id !== id));
+    
+    // Firestore persistence
+    testService.deleteTest(id).catch((err) => {
+      console.error('Error deleting test from Firestore:', err);
+    });
   };
 
   const togglePopularTest = (id: string) => {
-    setStore(prev => ({
-      ...prev,
-      tests: prev.tests.map(t => t.id === id ? { ...t, isPopular: !t.isPopular } : t)
-    }));
+    const target = tests.find((t) => t.id === id);
+    if (!target) return;
+    
+    const nextStatus = !target.isPopular;
+    setTests((prev) => prev.map((t) => (t.id === id ? { ...t, isPopular: nextStatus } : t)));
+    
+    testService.togglePopularTest(id, target.isPopular || false).catch((err) => {
+      console.error('Error toggling popular test status in Firestore:', err);
+    });
   };
 
   // --- PACKAGES CRUD ---
   const addPackage = (newPkgData: Omit<HealthPackage, 'id'>): HealthPackage => {
     const id = `pkg-${Date.now()}`;
     const newPkg: HealthPackage = { ...newPkgData, id };
-    setStore(prev => ({
-      ...prev,
-      packages: [newPkg, ...prev.packages]
-    }));
+    
+    setPackages((prev) => [newPkg, ...prev]);
+    
+    packageService.createPackage(newPkgData, id).catch((err) => {
+      console.error('Error creating package in Firestore:', err);
+    });
+    
     return newPkg;
   };
 
   const updatePackage = (id: string, patch: Partial<HealthPackage>) => {
-    setStore(prev => ({
-      ...prev,
-      packages: prev.packages.map(p => p.id === id ? { ...p, ...patch } : p)
-    }));
+    setPackages((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
+    
+    packageService.updatePackage(id, patch).catch((err) => {
+      console.error('Error updating package in Firestore:', err);
+    });
   };
 
   const deletePackage = (id: string) => {
-    setStore(prev => ({
-      ...prev,
-      packages: prev.packages.filter(p => p.id !== id)
-    }));
+    setPackages((prev) => prev.filter((p) => p.id !== id));
+    
+    packageService.deletePackage(id).catch((err) => {
+      console.error('Error deleting package from Firestore:', err);
+    });
   };
 
   const togglePopularPackage = (id: string) => {
-    setStore(prev => ({
-      ...prev,
-      packages: prev.packages.map(p => p.id === id ? { ...p, isPopular: !p.isPopular } : p)
-    }));
+    const target = packages.find((p) => p.id === id);
+    if (!target) return;
+    
+    const nextStatus = !target.isPopular;
+    setPackages((prev) => prev.map((p) => (p.id === id ? { ...p, isPopular: nextStatus } : p)));
+    
+    packageService.togglePopularPackage(id, target.isPopular || false).catch((err) => {
+      console.error('Error toggling popular package in Firestore:', err);
+    });
   };
 
   // --- FAQS CRUD ---
   const addFAQ = (newFaqData: Omit<FAQItem, 'id'>): FAQItem => {
     const id = `faq-${Date.now()}`;
     const newFaq: FAQItem = { ...newFaqData, id };
-    setStore(prev => ({
-      ...prev,
-      faqs: [...prev.faqs, newFaq]
-    }));
+    
+    setFaqs((prev) => [...prev, newFaq]);
+    
+    faqService.createFAQ(newFaqData, id).catch((err) => {
+      console.error('Error creating FAQ in Firestore:', err);
+    });
+    
     return newFaq;
   };
 
   const updateFAQ = (id: string, patch: Partial<FAQItem>) => {
-    setStore(prev => ({
-      ...prev,
-      faqs: prev.faqs.map(f => f.id === id ? { ...f, ...patch } : f)
-    }));
+    setFaqs((prev) => prev.map((f) => (f.id === id ? { ...f, ...patch } : f)));
+    
+    faqService.updateFAQ(id, patch).catch((err) => {
+      console.error('Error updating FAQ in Firestore:', err);
+    });
   };
 
   const deleteFAQ = (id: string) => {
-    setStore(prev => ({
-      ...prev,
-      faqs: prev.faqs.filter(f => f.id !== id)
-    }));
+    setFaqs((prev) => prev.filter((f) => f.id !== id));
+    
+    faqService.deleteFAQ(id).catch((err) => {
+      console.error('Error deleting FAQ from Firestore:', err);
+    });
   };
 
   // --- BLOG CRUD ---
   const addBlogPost = (newPostData: Omit<BlogPost, 'id'>): BlogPost => {
     const id = `post-${Date.now()}`;
     const newPost: BlogPost = { ...newPostData, id };
-    setStore(prev => ({
-      ...prev,
-      blogPosts: [newPost, ...prev.blogPosts]
-    }));
+    
+    setBlogPosts((prev) => [newPost, ...prev]);
+    
+    blogService.createBlogPost(newPostData, id).catch((err) => {
+      console.error('Error creating blog post in Firestore:', err);
+    });
+    
     return newPost;
   };
 
   const updateBlogPost = (id: string, patch: Partial<BlogPost>) => {
-    setStore(prev => ({
-      ...prev,
-      blogPosts: prev.blogPosts.map(b => b.id === id ? { ...b, ...patch } : b)
-    }));
+    setBlogPosts((prev) => prev.map((b) => (b.id === id ? { ...b, ...patch } : b)));
+    
+    blogService.updateBlogPost(id, patch).catch((err) => {
+      console.error('Error updating blog post in Firestore:', err);
+    });
   };
 
   const deleteBlogPost = (id: string) => {
-    setStore(prev => ({
-      ...prev,
-      blogPosts: prev.blogPosts.filter(b => b.id !== id)
-    }));
+    setBlogPosts((prev) => prev.filter((b) => b.id !== id));
+    
+    blogService.deleteBlogPost(id).catch((err) => {
+      console.error('Error deleting blog post from Firestore:', err);
+    });
   };
 
   // --- BOOKINGS CRUD ---
@@ -513,144 +411,240 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       id,
       createdAt
     };
-    setStore(prev => ({
-      ...prev,
-      bookings: [newBooking, ...prev.bookings]
-    }));
+    
+    setBookings((prev) => [newBooking, ...prev]);
+    
+    bookingService.createBooking(bookingData, id).catch((err) => {
+      console.error('Error saving booking to Firestore:', err);
+    });
+    
     return newBooking;
   };
 
   const updateBookingStatus = (id: string, status: BookingRequest['status']) => {
-    setStore(prev => ({
-      ...prev,
-      bookings: prev.bookings.map(b => b.id === id ? { ...b, status } : b)
-    }));
+    setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, status } : b)));
+    
+    bookingService.updateBookingStatus(id, status).catch((err) => {
+      console.error('Error updating booking status in Firestore:', err);
+    });
   };
 
   const deleteBooking = (id: string) => {
-    setStore(prev => ({
-      ...prev,
-      bookings: prev.bookings.filter(b => b.id !== id)
-    }));
+    setBookings((prev) => prev.filter((b) => b.id !== id));
+    
+    bookingService.deleteBooking(id).catch((err) => {
+      console.error('Error deleting booking from Firestore:', err);
+    });
   };
 
   // --- PATIENT REPORTS CRUD ---
   const addPatientReport = (report: PatientReportRecord) => {
-    setStore(prev => ({
-      ...prev,
-      patientReports: [report, ...prev.patientReports.filter(r => r.uhid !== report.uhid)]
-    }));
+    setPatientReports((prev) => [report, ...prev.filter((r) => r.uhid !== report.uhid)]);
+    
+    reportService.createPatientReport(report).catch((err) => {
+      console.error('Error saving patient report to Firestore:', err);
+    });
   };
 
   const updatePatientReport = (uhid: string, patch: Partial<PatientReportRecord>) => {
-    setStore(prev => ({
-      ...prev,
-      patientReports: prev.patientReports.map(r => r.uhid === uhid ? { ...r, ...patch } : r)
-    }));
+    setPatientReports((prev) => prev.map((r) => (r.uhid === uhid ? { ...r, ...patch } : r)));
+    
+    reportService.updatePatientReport(uhid, patch).catch((err) => {
+      console.error('Error updating patient report in Firestore:', err);
+    });
   };
 
   const deletePatientReport = (uhid: string) => {
-    setStore(prev => ({
-      ...prev,
-      patientReports: prev.patientReports.filter(r => r.uhid !== uhid)
-    }));
+    setPatientReports((prev) => prev.filter((r) => r.uhid !== uhid));
+    
+    reportService.deletePatientReport(uhid).catch((err) => {
+      console.error('Error deleting patient report from Firestore:', err);
+    });
   };
 
   // --- LAB INFO & SETTINGS ---
   const updateLabInfo = (info: Partial<typeof LAB_INFO>) => {
-    setStore(prev => ({
-      ...prev,
-      labInfo: { ...prev.labInfo, ...info }
-    }));
+    setLabInfo((prev) => ({ ...prev, ...info }));
+    siteService.updateLabInfo(info).catch((err) => {
+      console.error('Error updating lab info in Firestore:', err);
+    });
   };
 
   const updateAnnouncement = (patch: Partial<AnnouncementSettings>) => {
-    setStore(prev => ({
-      ...prev,
-      announcement: { ...prev.announcement, ...patch }
-    }));
+    setAnnouncement((prev) => ({ ...prev, ...patch }));
+    siteService.updateAnnouncement(patch).catch((err) => {
+      console.error('Error updating announcement in Firestore:', err);
+    });
   };
 
   const updateDepartment = (id: string, patch: Partial<DiagnosticDepartment>) => {
-    setStore(prev => ({
-      ...prev,
-      departments: prev.departments.map(d => d.id === id ? { ...d, ...patch } : d)
-    }));
+    const updated = departments.map((d) => (d.id === id ? { ...d, ...patch } : d));
+    setDepartments(updated);
+    siteService.updateDepartments(updated).catch((err) => {
+      console.error('Error updating departments in Firestore:', err);
+    });
   };
 
   // --- SITE IMAGES MANAGEMENT ---
   const updateSiteImage = (key: keyof SiteImagesConfig, url: string) => {
-    setStore(prev => ({
-      ...prev,
-      siteImages: {
-        ...prev.siteImages,
-        [key]: url.trim()
-      }
-    }));
+    const updated = {
+      ...siteImages,
+      [key]: url.trim()
+    };
+    setSiteImages(updated);
+    siteService.updateSiteImages({ [key]: url.trim() }).catch((err) => {
+      console.error('Error updating site image in Firestore:', err);
+    });
   };
 
   const updateAllSiteImages = (images: Partial<SiteImagesConfig>) => {
-    setStore(prev => ({
-      ...prev,
-      siteImages: {
-        ...prev.siteImages,
-        ...images
-      }
-    }));
+    const updated = {
+      ...siteImages,
+      ...images
+    };
+    setSiteImages(updated);
+    siteService.updateSiteImages(images).catch((err) => {
+      console.error('Error updating site images in Firestore:', err);
+    });
   };
 
   const resetSiteImages = () => {
-    setStore(prev => ({
-      ...prev,
-      siteImages: DEFAULT_SITE_IMAGES
-    }));
+    setSiteImages(DEFAULT_SITE_IMAGES);
+    siteService.updateSiteImages(DEFAULT_SITE_IMAGES).catch((err) => {
+      console.error('Error resetting site images in Firestore:', err);
+    });
   };
 
-  // --- BACKUP / RESTORE / RESET ---
-  const resetToDefaults = () => {
-    const defaultData: LabDataStore = {
-      tests: POPULAR_TESTS,
-      packages: HEALTH_PACKAGES,
-      faqs: FAQS,
-      blogPosts: BLOG_POSTS,
-      bookings: INITIAL_BOOKINGS,
-      patientReports: SAMPLE_PATIENT_REPORTS,
-      labInfo: LAB_INFO,
-      departments: DIAGNOSTIC_DEPARTMENTS,
-      announcement: INITIAL_ANNOUNCEMENT,
-      siteImages: DEFAULT_SITE_IMAGES
-    };
-    setStore(defaultData);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultData));
+  // --- ADMIN AUTHENTICATION & ACCESS CONTROL ---
+  const loginAdmin = async (
+    username: string, 
+    password: string, 
+    rememberMe = true
+  ): Promise<{ success: boolean; message?: string }> => {
+    const result = await authService.loginAdminUser(username, password);
+    if (result.success && result.user) {
+      setAdminUser(result.user);
+      try {
+        if (rememberMe) {
+          localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(result.user));
+        } else {
+          sessionStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(result.user));
+        }
+      } catch (e) {
+        console.error('Failed to store admin session', e);
+      }
+      return { success: true };
+    }
+    return { success: false, message: result.message };
+  };
+
+  const logoutAdmin = () => {
+    setAdminUser(null);
+    authService.logoutAdminUser().catch(() => {});
+    try {
+      localStorage.removeItem(ADMIN_SESSION_KEY);
+      sessionStorage.removeItem(ADMIN_SESSION_KEY);
+    } catch (e) {
+      console.error('Failed to clear admin session', e);
+    }
+  };
+
+  const changeAdminPassword = async (
+    username: string, 
+    currentPass: string, 
+    newPass: string
+  ): Promise<{ success: boolean; message: string }> => {
+    const res = await authService.updateAdminUserPassword(username, currentPass, newPass);
+    if (res.success) {
+      const refreshedAccounts = await authService.getAdminAccounts();
+      setAdminAccounts(refreshedAccounts);
+    }
+    return res;
+  };
+
+  const updateAdminAccounts = (accounts: AdminCredential[]) => {
+    setAdminAccounts(accounts);
+    authService.syncAdminAccounts(accounts).catch(() => {});
+  };
+
+  // --- SYSTEM UTILITIES ---
+  const seedDatabase = async (force: boolean = false) => {
+    await seedInitialFirestoreData(force);
+  };
+
+  const resetToDefaults = async () => {
+    await seedInitialFirestoreData(true);
+    setTests(POPULAR_TESTS);
+    setPackages(HEALTH_PACKAGES);
+    setFaqs(FAQS);
+    setBlogPosts(BLOG_POSTS);
+    setPatientReports(SAMPLE_PATIENT_REPORTS);
+    setLabInfo(LAB_INFO);
+    setDepartments(DIAGNOSTIC_DEPARTMENTS);
+    setAnnouncement(INITIAL_ANNOUNCEMENT);
+    setSiteImages(DEFAULT_SITE_IMAGES);
+    setAdminAccounts(authService.DEFAULT_ADMIN_ACCOUNTS);
   };
 
   const exportDataJSON = () => {
-    return JSON.stringify(store, null, 2);
+    const fullStore = {
+      tests,
+      packages,
+      faqs,
+      blogPosts,
+      bookings,
+      patientReports,
+      labInfo,
+      departments,
+      announcement,
+      siteImages
+    };
+    return JSON.stringify(fullStore, null, 2);
   };
 
-  const importDataJSON = (jsonString: string): boolean => {
+  const importDataJSON = async (jsonString: string): Promise<boolean> => {
     try {
       const parsed = JSON.parse(jsonString);
       if (parsed && typeof parsed === 'object') {
-        const validated: LabDataStore = {
-          tests: Array.isArray(parsed.tests) ? parsed.tests : store.tests,
-          packages: Array.isArray(parsed.packages) ? parsed.packages : store.packages,
-          faqs: Array.isArray(parsed.faqs) ? parsed.faqs : store.faqs,
-          blogPosts: Array.isArray(parsed.blogPosts) ? parsed.blogPosts : store.blogPosts,
-          bookings: Array.isArray(parsed.bookings) ? parsed.bookings : store.bookings,
-          patientReports: Array.isArray(parsed.patientReports) ? parsed.patientReports : store.patientReports,
-          labInfo: parsed.labInfo ? { ...store.labInfo, ...parsed.labInfo } : store.labInfo,
-          departments: Array.isArray(parsed.departments) ? parsed.departments : store.departments,
-          announcement: parsed.announcement ? { ...store.announcement, ...parsed.announcement } : store.announcement,
-          siteImages: parsed.siteImages ? { ...DEFAULT_SITE_IMAGES, ...parsed.siteImages } : store.siteImages
-        };
-        setStore(validated);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(validated));
+        if (Array.isArray(parsed.tests)) {
+          for (const t of parsed.tests) {
+            await testService.createTest(t, t.id);
+          }
+        }
+        if (Array.isArray(parsed.packages)) {
+          for (const p of parsed.packages) {
+            await packageService.createPackage(p, p.id);
+          }
+        }
+        if (Array.isArray(parsed.faqs)) {
+          for (const f of parsed.faqs) {
+            await faqService.createFAQ(f, f.id);
+          }
+        }
+        if (Array.isArray(parsed.blogPosts)) {
+          for (const b of parsed.blogPosts) {
+            await blogService.createBlogPost(b, b.id);
+          }
+        }
+        if (Array.isArray(parsed.patientReports)) {
+          for (const r of parsed.patientReports) {
+            await reportService.createPatientReport(r);
+          }
+        }
+        if (parsed.siteImages) {
+          await siteService.updateSiteImages(parsed.siteImages);
+        }
+        if (parsed.announcement) {
+          await siteService.updateAnnouncement(parsed.announcement);
+        }
+        if (parsed.labInfo) {
+          await siteService.updateLabInfo(parsed.labInfo);
+        }
         return true;
       }
       return false;
     } catch (e) {
-      console.error('Import failed', e);
+      console.error('Import data failed', e);
       return false;
     }
   };
@@ -658,27 +652,44 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <DataContext.Provider
       value={{
-        ...store,
+        tests,
+        packages,
+        faqs,
+        blogPosts,
+        bookings,
+        patientReports,
+        labInfo,
+        departments,
+        announcement,
+        siteImages,
+        isFirebaseLoading,
+        // Tests
         addTest,
         updateTest,
         deleteTest,
         togglePopularTest,
+        // Packages
         addPackage,
         updatePackage,
         deletePackage,
         togglePopularPackage,
+        // FAQs
         addFAQ,
         updateFAQ,
         deleteFAQ,
+        // Blog
         addBlogPost,
         updateBlogPost,
         deleteBlogPost,
+        // Bookings
         addBooking,
         updateBookingStatus,
         deleteBooking,
+        // Reports
         addPatientReport,
         updatePatientReport,
         deletePatientReport,
+        // Lab Info & Settings
         updateLabInfo,
         updateAnnouncement,
         updateDepartment,
@@ -697,7 +708,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // System
         resetToDefaults,
         exportDataJSON,
-        importDataJSON
+        importDataJSON,
+        seedDatabase
       }}
     >
       {children}

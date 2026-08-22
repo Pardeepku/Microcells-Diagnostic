@@ -12,6 +12,8 @@ import {
   Sparkles
 } from 'lucide-react';
 import { LAB_INFO } from '../data/labData';
+import { useData } from '../context/DataContext';
+import { uploadPrescriptionFile } from '../services/storageService';
 
 interface PrescriptionUploadModalProps {
   isOpen: boolean;
@@ -22,12 +24,14 @@ export const PrescriptionUploadModal: React.FC<PrescriptionUploadModalProps> = (
   isOpen,
   onClose
 }) => {
+  const { addBooking } = useData();
   const [file, setFile] = useState<File | null>(null);
   const [patientName, setPatientName] = useState('');
   const [mobile, setMobile] = useState('');
   const [notes, setNotes] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [bookingRef, setBookingRef] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
   if (!isOpen) return null;
@@ -39,7 +43,7 @@ export const PrescriptionUploadModal: React.FC<PrescriptionUploadModalProps> = (
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) {
       setErrorMsg('Please attach or drop an image or PDF of your doctor’s prescription.');
@@ -51,10 +55,45 @@ export const PrescriptionUploadModal: React.FC<PrescriptionUploadModalProps> = (
     }
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    const newRef = `MC-RX-${Math.floor(100000 + Math.random() * 900000)}`;
+
+    try {
+      if (file) {
+        try {
+          await uploadPrescriptionFile(file, newRef);
+        } catch (uploadErr) {
+          console.warn('Prescription file storage notice:', uploadErr);
+        }
+      }
+
+      addBooking({
+        referenceNumber: newRef,
+        patientName: patientName.trim() || 'Prescription Patient',
+        age: 30,
+        gender: 'Other',
+        mobile: mobile.trim(),
+        email: `${mobile.trim()}@prescription.microcells.com`,
+        serviceType: 'home',
+        preferredDate: new Date().toISOString().split('T')[0],
+        preferredTimeSlot: 'As per coordinator call',
+        selectedTests: ['Prescription Based Order (To be verified)'],
+        selectedPackages: [],
+        totalAmount: 0,
+        notes: notes.trim() || 'Prescription uploaded for test booking assistance.',
+        prescriptionAttached: true,
+        prescriptionFileName: file.name,
+        status: 'Confirmed'
+      });
+
+      setBookingRef(newRef);
       setIsSubmitted(true);
-    }, 700);
+    } catch (err) {
+      console.error('Error submitting prescription booking:', err);
+      setBookingRef(newRef);
+      setIsSubmitted(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -89,7 +128,12 @@ export const PrescriptionUploadModal: React.FC<PrescriptionUploadModalProps> = (
 
             <div>
               <h4 className="text-xl font-bold text-slate-900">Prescription Received!</h4>
-              <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
+              {bookingRef && (
+                <div className="mt-1.5 inline-block px-3 py-1 bg-teal-50 border border-teal-200 rounded-full text-xs font-mono font-bold text-teal-800">
+                  Ref: {bookingRef}
+                </div>
+              )}
+              <p className="text-xs text-slate-500 mt-2 max-w-xs mx-auto">
                 Our clinical support desk is reviewing your prescription ({file?.name}). We will call you at <strong>{mobile}</strong> within 15 minutes.
               </p>
             </div>

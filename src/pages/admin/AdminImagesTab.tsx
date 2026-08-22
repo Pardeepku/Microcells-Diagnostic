@@ -22,6 +22,7 @@ import {
 import { SiteImagesConfig, SiteImageMeta } from '../../types';
 import { useData } from '../../context/DataContext';
 import { SITE_IMAGE_REGISTRY, DEFAULT_SITE_IMAGES } from '../../data/labData';
+import { uploadFile } from '../../services/storageService';
 
 interface AdminImagesTabProps {
   onShowToast: (message: string) => void;
@@ -151,8 +152,8 @@ export const AdminImagesTab: React.FC<AdminImagesTabProps> = ({ onShowToast }) =
     onShowToast(`Image updated for "${key}"`);
   };
 
-  // Handle direct file upload (converts to base64 Data URL)
-  const handleFileUpload = (key: keyof SiteImagesConfig, e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle direct file upload (uploads to Firebase Storage with local fallback)
+  const handleFileUpload = async (key: keyof SiteImagesConfig, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -162,38 +163,50 @@ export const AdminImagesTab: React.FC<AdminImagesTabProps> = ({ onShowToast }) =
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      if (dataUrl) {
-        updateSiteImage(key, dataUrl);
-        onShowToast(`Image uploaded & saved for "${key}"`);
-      }
-    };
-    reader.onerror = () => {
-      onShowToast('Failed to read uploaded image file');
-    };
-    reader.readAsDataURL(file);
+    try {
+      const downloadUrl = await uploadFile(file, `site-images/${key}`);
+      updateSiteImage(key, downloadUrl);
+      onShowToast(`Image uploaded to cloud storage & saved for "${key}"`);
+    } catch (storageErr) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        if (dataUrl) {
+          updateSiteImage(key, dataUrl);
+          onShowToast(`Image saved for "${key}"`);
+        }
+      };
+      reader.onerror = () => {
+        onShowToast('Failed to read uploaded image file');
+      };
+      reader.readAsDataURL(file);
+    }
 
     // Reset input so same file can be selected again if needed
     e.target.value = '';
   };
 
   // Handle Drag & Drop on image card
-  const handleDrop = (key: keyof SiteImagesConfig, e: React.DragEvent) => {
+  const handleDrop = async (key: keyof SiteImagesConfig, e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     const file = e.dataTransfer.files?.[0];
     if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const dataUrl = event.target?.result as string;
-        if (dataUrl) {
-          updateSiteImage(key, dataUrl);
-          onShowToast(`Image uploaded & saved for "${key}"`);
-        }
-      };
-      reader.readAsDataURL(file);
+      try {
+        const downloadUrl = await uploadFile(file, `site-images/${key}`);
+        updateSiteImage(key, downloadUrl);
+        onShowToast(`Image uploaded to cloud storage & saved for "${key}"`);
+      } catch (storageErr) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const dataUrl = event.target?.result as string;
+          if (dataUrl) {
+            updateSiteImage(key, dataUrl);
+            onShowToast(`Image saved for "${key}"`);
+          }
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
