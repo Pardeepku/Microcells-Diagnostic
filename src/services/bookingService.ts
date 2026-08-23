@@ -85,3 +85,12 @@ export const deleteBooking = async (id: string): Promise<void> => {
   const docRef = doc(db, COLLECTION_NAME, id);
   await deleteDoc(docRef);
 };
+
+export const saveBooking = async (booking: BookingRequest): Promise<void> => {
+  const docRef = doc(db, COLLECTION_NAME, booking.id);
+  await setDoc(docRef, {
+    ...booking,
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+};
+

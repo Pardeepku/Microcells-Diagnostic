@@ -23,14 +23,23 @@ import { AdminTab, BookingRequest } from '../../types';
 import { useData } from '../../context/DataContext';
 
 interface AdminOverviewTabProps {
-  onSelectTab: (tab: AdminTab) => void;
+  onSelectTab?: (tab: AdminTab) => void;
+  onNavigateTab?: (tab: AdminTab) => void;
   onShowToast: (msg: string) => void;
 }
 
 export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({
   onSelectTab,
+  onNavigateTab,
   onShowToast
 }) => {
+  const handleSelectTab = (tab: AdminTab) => {
+    if (onSelectTab) {
+      onSelectTab(tab);
+    } else if (onNavigateTab) {
+      onNavigateTab(tab);
+    }
+  };
   const { 
     tests, 
     packages, 
@@ -108,16 +117,20 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({
 
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <button
-              onClick={() => onSelectTab('tests')}
-              className="px-4 py-2.5 bg-teal-500 hover:bg-teal-400 text-slate-950 text-xs font-bold rounded-xl shadow-xs transition-all flex items-center gap-1.5"
+              id="btn-overview-add-test"
+              type="button"
+              onClick={() => handleSelectTab('tests')}
+              className="px-4 py-2.5 bg-teal-500 hover:bg-teal-400 active:scale-95 text-slate-950 text-xs font-bold rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <FlaskConical className="w-4 h-4" />
               <span>+ Add New Test</span>
             </button>
 
             <button
-              onClick={() => onSelectTab('packages')}
-              className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl border border-white/20 transition-all flex items-center gap-1.5"
+              id="btn-overview-add-package"
+              type="button"
+              onClick={() => handleSelectTab('packages')}
+              className="px-4 py-2.5 bg-white/10 hover:bg-white/20 active:scale-95 text-white text-xs font-bold rounded-xl border border-white/20 transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <Package className="w-4 h-4" />
               <span>+ New Package</span>
@@ -133,8 +146,10 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({
               <span><strong>Live Site Banner:</strong> {announcement.text}</span>
             </div>
             <button
-              onClick={() => onSelectTab('settings')}
-              className="text-[11px] font-semibold text-white/80 hover:text-white underline shrink-0"
+              id="btn-overview-edit-banner"
+              type="button"
+              onClick={() => handleSelectTab('settings')}
+              className="text-[11px] font-semibold text-white/80 hover:text-white underline shrink-0 cursor-pointer"
             >
               Edit Banner
             </button>
@@ -145,91 +160,133 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({
       {/* Primary KPI Cards Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         
-        <div 
-          onClick={() => onSelectTab('tests')}
-          className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs hover:border-teal-400 hover:shadow-md transition-all cursor-pointer group"
+        {/* 1. Active Tests */}
+        <button
+          id="stat-card-tests"
+          type="button"
+          onClick={() => handleSelectTab('tests')}
+          className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs hover:border-teal-500 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer group text-left focus:outline-none focus:ring-2 focus:ring-teal-500"
+          title="Click to view and manage Tests Catalog"
         >
           <div className="flex items-center justify-between text-slate-400 mb-2">
-            <div className="p-2 rounded-xl bg-sky-50 text-sky-900 group-hover:bg-sky-900 group-hover:text-white transition-colors">
+            <div className="p-2 rounded-xl bg-sky-50 text-sky-900 group-hover:bg-sky-900 group-hover:text-white transition-colors shadow-2xs">
               <FlaskConical className="w-4 h-4" />
             </div>
-            <ArrowUpRight className="w-4 h-4 group-hover:text-teal-600 transition-colors" />
+            <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-teal-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
           </div>
-          <p className="text-2xl font-black text-slate-900">{tests.length}</p>
-          <p className="text-xs font-semibold text-slate-500 mt-0.5">Active Tests</p>
-        </div>
+          <p className="text-2xl font-black text-slate-900 group-hover:text-teal-700 transition-colors">{tests.length}</p>
+          <p className="text-xs font-semibold text-slate-500 mt-0.5 flex items-center justify-between">
+            <span>Active Tests</span>
+            <span className="text-[10px] font-bold text-teal-600 opacity-0 group-hover:opacity-100 transition-opacity">View &rarr;</span>
+          </p>
+        </button>
 
-        <div 
-          onClick={() => onSelectTab('packages')}
-          className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs hover:border-teal-400 hover:shadow-md transition-all cursor-pointer group"
+        {/* 2. Health Packages */}
+        <button
+          id="stat-card-packages"
+          type="button"
+          onClick={() => handleSelectTab('packages')}
+          className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs hover:border-teal-500 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer group text-left focus:outline-none focus:ring-2 focus:ring-teal-500"
+          title="Click to view and manage Health Packages"
         >
           <div className="flex items-center justify-between text-slate-400 mb-2">
-            <div className="p-2 rounded-xl bg-teal-50 text-teal-800 group-hover:bg-teal-700 group-hover:text-white transition-colors">
+            <div className="p-2 rounded-xl bg-teal-50 text-teal-800 group-hover:bg-teal-700 group-hover:text-white transition-colors shadow-2xs">
               <Package className="w-4 h-4" />
             </div>
-            <ArrowUpRight className="w-4 h-4 group-hover:text-teal-600 transition-colors" />
+            <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-teal-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
           </div>
-          <p className="text-2xl font-black text-slate-900">{packages.length}</p>
-          <p className="text-xs font-semibold text-slate-500 mt-0.5">Health Packages</p>
-        </div>
+          <p className="text-2xl font-black text-slate-900 group-hover:text-teal-700 transition-colors">{packages.length}</p>
+          <p className="text-xs font-semibold text-slate-500 mt-0.5 flex items-center justify-between">
+            <span>Health Packages</span>
+            <span className="text-[10px] font-bold text-teal-600 opacity-0 group-hover:opacity-100 transition-opacity">View &rarr;</span>
+          </p>
+        </button>
 
-        <div 
-          onClick={() => onSelectTab('bookings')}
-          className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs hover:border-teal-400 hover:shadow-md transition-all cursor-pointer group"
+        {/* 3. Appointments / Bookings */}
+        <button
+          id="stat-card-bookings"
+          type="button"
+          onClick={() => handleSelectTab('bookings')}
+          className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs hover:border-amber-500 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer group text-left focus:outline-none focus:ring-2 focus:ring-amber-500"
+          title="Click to view and manage Appointments & Home Collections"
         >
           <div className="flex items-center justify-between text-slate-400 mb-2">
-            <div className="p-2 rounded-xl bg-amber-50 text-amber-800 group-hover:bg-amber-600 group-hover:text-white transition-colors">
+            <div className="p-2 rounded-xl bg-amber-50 text-amber-800 group-hover:bg-amber-600 group-hover:text-white transition-colors shadow-2xs">
               <CalendarCheck className="w-4 h-4" />
             </div>
-            <span className="text-[10px] font-bold px-1.5 py-0.5 bg-amber-100 text-amber-900 rounded-md">
+            <span className="text-[10px] font-bold px-1.5 py-0.5 bg-amber-100 text-amber-900 group-hover:bg-amber-200 rounded-md transition-colors">
               {pendingBookings.length} Active
             </span>
           </div>
-          <p className="text-2xl font-black text-slate-900">{bookings.length}</p>
-          <p className="text-xs font-semibold text-slate-500 mt-0.5">Appointments</p>
-        </div>
+          <p className="text-2xl font-black text-slate-900 group-hover:text-amber-700 transition-colors">{bookings.length}</p>
+          <p className="text-xs font-semibold text-slate-500 mt-0.5 flex items-center justify-between">
+            <span>Appointments</span>
+            <span className="text-[10px] font-bold text-amber-600 opacity-0 group-hover:opacity-100 transition-opacity">View &rarr;</span>
+          </p>
+        </button>
 
-        <div 
-          onClick={() => onSelectTab('reports')}
-          className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs hover:border-teal-400 hover:shadow-md transition-all cursor-pointer group"
+        {/* 4. Patient Reports */}
+        <button
+          id="stat-card-reports"
+          type="button"
+          onClick={() => handleSelectTab('reports')}
+          className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs hover:border-indigo-500 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer group text-left focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          title="Click to view and manage Patient Diagnostic Reports"
         >
           <div className="flex items-center justify-between text-slate-400 mb-2">
-            <div className="p-2 rounded-xl bg-indigo-50 text-indigo-800 group-hover:bg-indigo-700 group-hover:text-white transition-colors">
+            <div className="p-2 rounded-xl bg-indigo-50 text-indigo-800 group-hover:bg-indigo-700 group-hover:text-white transition-colors shadow-2xs">
               <FileText className="w-4 h-4" />
             </div>
-            <ArrowUpRight className="w-4 h-4 group-hover:text-indigo-600 transition-colors" />
+            <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
           </div>
-          <p className="text-2xl font-black text-slate-900">{patientReports.length}</p>
-          <p className="text-xs font-semibold text-slate-500 mt-0.5">Patient Reports</p>
-        </div>
+          <p className="text-2xl font-black text-slate-900 group-hover:text-indigo-700 transition-colors">{patientReports.length}</p>
+          <p className="text-xs font-semibold text-slate-500 mt-0.5 flex items-center justify-between">
+            <span>Patient Reports</span>
+            <span className="text-[10px] font-bold text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity">View &rarr;</span>
+          </p>
+        </button>
 
-        <div 
-          onClick={() => onSelectTab('blog')}
-          className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs hover:border-teal-400 hover:shadow-md transition-all cursor-pointer group"
+        {/* 5. Blog Articles */}
+        <button
+          id="stat-card-blog"
+          type="button"
+          onClick={() => handleSelectTab('blog')}
+          className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs hover:border-rose-500 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer group text-left focus:outline-none focus:ring-2 focus:ring-rose-500"
+          title="Click to view and manage Health Blog Articles"
         >
           <div className="flex items-center justify-between text-slate-400 mb-2">
-            <div className="p-2 rounded-xl bg-rose-50 text-rose-800 group-hover:bg-rose-700 group-hover:text-white transition-colors">
+            <div className="p-2 rounded-xl bg-rose-50 text-rose-800 group-hover:bg-rose-700 group-hover:text-white transition-colors shadow-2xs">
               <BookOpen className="w-4 h-4" />
             </div>
-            <ArrowUpRight className="w-4 h-4 group-hover:text-rose-600 transition-colors" />
+            <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-rose-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
           </div>
-          <p className="text-2xl font-black text-slate-900">{blogPosts.length}</p>
-          <p className="text-xs font-semibold text-slate-500 mt-0.5">Blog Articles</p>
-        </div>
+          <p className="text-2xl font-black text-slate-900 group-hover:text-rose-700 transition-colors">{blogPosts.length}</p>
+          <p className="text-xs font-semibold text-slate-500 mt-0.5 flex items-center justify-between">
+            <span>Blog Articles</span>
+            <span className="text-[10px] font-bold text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity">View &rarr;</span>
+          </p>
+        </button>
 
-        <div 
-          onClick={() => onSelectTab('faqs')}
-          className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs hover:border-teal-400 hover:shadow-md transition-all cursor-pointer group"
+        {/* 6. FAQ Items */}
+        <button
+          id="stat-card-faqs"
+          type="button"
+          onClick={() => handleSelectTab('faqs')}
+          className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs hover:border-purple-500 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer group text-left focus:outline-none focus:ring-2 focus:ring-purple-500"
+          title="Click to view and manage Patient FAQs"
         >
           <div className="flex items-center justify-between text-slate-400 mb-2">
-            <div className="p-2 rounded-xl bg-purple-50 text-purple-800 group-hover:bg-purple-700 group-hover:text-white transition-colors">
+            <div className="p-2 rounded-xl bg-purple-50 text-purple-800 group-hover:bg-purple-700 group-hover:text-white transition-colors shadow-2xs">
               <HelpCircle className="w-4 h-4" />
             </div>
-            <ArrowUpRight className="w-4 h-4 group-hover:text-purple-600 transition-colors" />
+            <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-purple-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
           </div>
-          <p className="text-2xl font-black text-slate-900">{faqs.length}</p>
-          <p className="text-xs font-semibold text-slate-500 mt-0.5">FAQ Items</p>
-        </div>
+          <p className="text-2xl font-black text-slate-900 group-hover:text-purple-700 transition-colors">{faqs.length}</p>
+          <p className="text-xs font-semibold text-slate-500 mt-0.5 flex items-center justify-between">
+            <span>FAQ Items</span>
+            <span className="text-[10px] font-bold text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity">View &rarr;</span>
+          </p>
+        </button>
 
       </div>
 
@@ -244,8 +301,10 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({
               <p className="text-xs text-slate-500">Live feed of appointment submissions from the patient portal</p>
             </div>
             <button
-              onClick={() => onSelectTab('bookings')}
-              className="text-xs font-bold text-teal-700 hover:text-teal-800 flex items-center gap-1"
+              id="btn-overview-view-all-bookings"
+              type="button"
+              onClick={() => handleSelectTab('bookings')}
+              className="text-xs font-bold text-teal-700 hover:text-teal-800 flex items-center gap-1 cursor-pointer"
             >
               <span>View All ({bookings.length})</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
@@ -310,8 +369,10 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({
           <div className="space-y-3">
             {/* Change Password & Security Settings */}
             <button
-              onClick={() => onSelectTab('settings')}
-              className="w-full p-3 rounded-2xl bg-teal-50/70 hover:bg-teal-50 border border-teal-200 hover:border-teal-400 text-teal-950 text-xs font-bold transition-all flex items-center justify-between"
+              id="btn-overview-change-password"
+              type="button"
+              onClick={() => handleSelectTab('settings')}
+              className="w-full p-3 rounded-2xl bg-teal-50/70 hover:bg-teal-50 border border-teal-200 hover:border-teal-400 text-teal-950 text-xs font-bold transition-all flex items-center justify-between cursor-pointer"
             >
               <div className="flex items-center gap-2.5">
                 <div className="p-2 rounded-xl bg-teal-600 shadow-2xs text-white">

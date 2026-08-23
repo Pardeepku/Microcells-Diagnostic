@@ -12,11 +12,13 @@ export type PageType =
   | 'blog-post' 
   | 'contact' 
   | 'faq' 
+  | 'custom-page'
   | 'privacy' 
   | 'terms' 
   | 'disclaimer' 
   | 'admin'
-  | 'admin-login';
+  | 'admin-login'
+  | (string & {});
 
 export interface AdminUser {
   username: string;
@@ -45,6 +47,10 @@ export type AdminTab =
   | 'bookings' 
   | 'reports' 
   | 'images'
+  | 'cms'
+  | 'pages'
+  | 'menu'
+  | 'branding'
   | 'settings';
 
 export interface SiteImagesConfig {
@@ -66,12 +72,15 @@ export interface SiteImagesConfig {
   doctorPriya: string;
   doctorRajesh: string;
   brandLogoUrl?: string;
+  faviconUrl?: string;
+  headerLogoUrl?: string;
+  footerLogoUrl?: string;
 }
 
 export interface SiteImageMeta {
   key: keyof SiteImagesConfig;
   title: string;
-  section: 'Home & Landing' | 'About & Team' | 'Services & Departments' | 'Patient Portals & Banners';
+  section: 'Home & Landing' | 'About & Team' | 'Services & Departments' | 'Patient Portals & Banners' | 'Branding & Logos';
   description: string;
   recommendedSize: string;
   defaultUrl: string;
@@ -83,6 +92,153 @@ export interface AnnouncementSettings {
   badgeText?: string;
   linkText?: string;
   linkPage?: PageType;
+}
+
+export interface LabBranch {
+  id?: string;
+  name: string;
+  address: string;
+  phone: string;
+  hours: string;
+  isHQ?: boolean;
+}
+
+export interface LabInfo {
+  companyName: string;
+  tradeName: string;
+  tagline: string;
+  subTagline: string;
+  brandLogoUrl: string;
+  phone: string;
+  altPhone: string;
+  whatsappNumber: string;
+  whatsappDisplay: string;
+  email: string;
+  supportEmail: string;
+  address: string;
+  landmark: string;
+  city: string;
+  pincode: string;
+  timings: string;
+  homeCollectionTimings: string;
+  emergencyContact: string;
+  nablAccreditationText: string;
+  isoAccreditationText?: string;
+  icmrRegNumber?: string;
+  gstNumber?: string;
+  googleMapEmbedUrl?: string;
+  facebookUrl?: string;
+  instagramUrl?: string;
+  linkedinUrl?: string;
+  twitterUrl?: string;
+  youtubeUrl?: string;
+  branches: LabBranch[];
+}
+
+export interface MenuItem {
+  id: string;
+  label: string;
+  page: PageType;
+  customSlug?: string;
+  enabled: boolean;
+  order: number;
+  isExternal?: boolean;
+  externalUrl?: string;
+  highlight?: boolean;
+  iconName?: string;
+}
+
+export interface FooterConfig {
+  aboutText: string;
+  accreditationHeadline: string;
+  accreditationSubtext: string;
+  copyrightText: string;
+  medicalDisclaimer: string;
+  showQuickLinks: boolean;
+  showDepartments: boolean;
+  showContactInfo: boolean;
+  showAccreditationBanner: boolean;
+}
+
+export interface HeroSectionContent {
+  badge: string;
+  headline: string;
+  headlineHighlight: string;
+  subheadline: string;
+  primaryCtaText: string;
+  secondaryCtaText: string;
+  stat1Value: string;
+  stat1Label: string;
+  stat2Value: string;
+  stat2Label: string;
+  stat3Value: string;
+  stat3Label: string;
+  stat4Value: string;
+  stat4Label: string;
+  trustPoints: string[];
+}
+
+export interface AboutSectionContent {
+  title: string;
+  subtitle: string;
+  missionStatement: string;
+  visionStatement: string;
+  qualityCommitment: string;
+  storyParagraph1: string;
+  storyParagraph2: string;
+  keyDifferentiators: string[];
+}
+
+export interface HomeCollectionSectionContent {
+  headline: string;
+  subheadline: string;
+  badge: string;
+  perks: { title: string; desc: string }[];
+  instructions: string[];
+}
+
+export interface WhyChooseUsFeature {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+}
+
+export interface WhyChooseUsSectionContent {
+  headline: string;
+  subheadline: string;
+  features: WhyChooseUsFeature[];
+}
+
+export interface ContactSectionContent {
+  headline: string;
+  subheadline: string;
+  helpdeskTitle: string;
+  helpdeskDesc: string;
+}
+
+export interface SiteContentConfig {
+  hero: HeroSectionContent;
+  about: AboutSectionContent;
+  homeCollection: HomeCollectionSectionContent;
+  whyChooseUs: WhyChooseUsSectionContent;
+  contact: ContactSectionContent;
+  footer: FooterConfig;
+}
+
+export interface CustomPageItem {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle?: string;
+  bannerImageUrl?: string;
+  content: string; // Rich markdown or HTML text
+  showInMenu: boolean;
+  showInFooter: boolean;
+  metaDescription?: string;
+  published: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export type ServiceCategory = 

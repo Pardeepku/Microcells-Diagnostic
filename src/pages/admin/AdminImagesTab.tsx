@@ -105,8 +105,12 @@ const CURATED_PRESETS: Record<keyof SiteImagesConfig, { label: string; url: stri
     { label: 'Dr. Rajesh (Clinical Biochemist)', url: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=600&q=80' },
     { label: 'Quality Control Lead', url: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=600&q=80' }
   ],
-  brandLogoUrl: []
+  brandLogoUrl: [],
+  headerLogoUrl: [],
+  footerLogoUrl: [],
+  faviconUrl: []
 };
+
 
 export const AdminImagesTab: React.FC<AdminImagesTabProps> = ({ onShowToast }) => {
   const { siteImages, updateSiteImage, updateAllSiteImages, resetSiteImages } = useData();

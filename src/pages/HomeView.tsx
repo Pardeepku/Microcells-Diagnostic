@@ -56,7 +56,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onOpenPrescription,
   onOpenWhatsApp
 }) => {
-  const { tests, packages, blogPosts, faqs, siteImages } = useData();
+  const { tests, packages, blogPosts, faqs, siteImages, siteContent, labInfo } = useData();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedConcern, setSelectedConcern] = useState<string>('All');
   const [faqOpenId, setFaqOpenId] = useState<string | null>(faqs[0]?.id || null);
@@ -96,18 +96,24 @@ export const HomeView: React.FC<HomeViewProps> = ({
               
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-500/15 border border-teal-500/30 text-teal-300 text-xs font-semibold">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Advanced Pathology & Diagnostic Testing</span>
+                <span>{siteContent?.hero?.badgeText || 'Advanced Pathology & Diagnostic Testing'}</span>
               </div>
 
               <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white font-display leading-[1.15]">
-                Accurate Diagnostics.<br />
-                <span className="bg-gradient-to-r from-teal-300 via-cyan-200 to-blue-200 bg-clip-text text-transparent">
-                  Better Healthcare.
-                </span>
+                {siteContent?.hero?.headline ? (
+                  siteContent.hero.headline
+                ) : (
+                  <>
+                    Accurate Diagnostics.<br />
+                    <span className="bg-gradient-to-r from-teal-300 via-cyan-200 to-blue-200 bg-clip-text text-transparent">
+                      Better Healthcare.
+                    </span>
+                  </>
+                )}
               </h1>
 
               <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal">
-                {LAB_INFO.subTagline}
+                {siteContent?.hero?.subheadline || labInfo?.subTagline || 'Advanced pathology testing with clinical precision, automated analyzers, and same-day digital reports.'}
               </p>
 
               {/* CTAs */}

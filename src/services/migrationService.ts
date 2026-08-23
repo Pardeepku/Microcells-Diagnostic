@@ -16,7 +16,11 @@ import {
   SAMPLE_PATIENT_REPORTS, 
   LAB_INFO, 
   DIAGNOSTIC_DEPARTMENTS,
-  DEFAULT_SITE_IMAGES
+  DEFAULT_SITE_IMAGES,
+  DEFAULT_MENU_ITEMS,
+  DEFAULT_FOOTER_CONFIG,
+  DEFAULT_SITE_CONTENT,
+  DEFAULT_CUSTOM_PAGES
 } from '../data/labData';
 import { DEFAULT_ADMIN_ACCOUNTS, syncAdminAccounts } from './authService';
 
@@ -202,11 +206,15 @@ export const seedInitialFirestoreData = async (force: boolean = false): Promise<
       }
     }
 
-    // 7. Seed Site Settings (Images, Announcement, Lab Info, Departments)
+    // 7. Seed Site Settings (Images, Announcement, Lab Info, Departments, Menu, Footer, Content, Pages)
     await setDoc(doc(db, SETTINGS_COLLECTION, 'images'), DEFAULT_SITE_IMAGES, { merge: true });
     await setDoc(doc(db, SETTINGS_COLLECTION, 'announcement'), INITIAL_ANNOUNCEMENT, { merge: true });
     await setDoc(doc(db, SETTINGS_COLLECTION, 'labInfo'), LAB_INFO, { merge: true });
     await setDoc(doc(db, SETTINGS_COLLECTION, 'departments'), { items: DIAGNOSTIC_DEPARTMENTS }, { merge: true });
+    await setDoc(doc(db, SETTINGS_COLLECTION, 'menu'), { items: DEFAULT_MENU_ITEMS }, { merge: true });
+    await setDoc(doc(db, SETTINGS_COLLECTION, 'footer'), DEFAULT_FOOTER_CONFIG, { merge: true });
+    await setDoc(doc(db, SETTINGS_COLLECTION, 'siteContent'), DEFAULT_SITE_CONTENT, { merge: true });
+    await setDoc(doc(db, SETTINGS_COLLECTION, 'customPages'), { items: DEFAULT_CUSTOM_PAGES }, { merge: true });
 
     // 8. Seed Admin Accounts
     await syncAdminAccounts(DEFAULT_ADMIN_ACCOUNTS);

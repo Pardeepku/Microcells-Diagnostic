@@ -2,7 +2,6 @@ import {
   doc, 
   getDoc, 
   setDoc, 
-  updateDoc, 
   onSnapshot,
   serverTimestamp 
 } from 'firebase/firestore';
@@ -10,9 +9,13 @@ import { db } from '../lib/firebase';
 import { 
   SiteImagesConfig, 
   AnnouncementSettings, 
-  DiagnosticDepartment 
+  DiagnosticDepartment,
+  LabInfo,
+  MenuItem,
+  FooterConfig,
+  SiteContentConfig,
+  CustomPageItem
 } from '../types';
-import { LAB_INFO } from '../data/labData';
 
 const COLLECTION_NAME = 'siteSettings';
 
@@ -21,6 +24,10 @@ const IMAGES_DOC = 'images';
 const ANNOUNCEMENT_DOC = 'announcement';
 const LAB_INFO_DOC = 'labInfo';
 const DEPARTMENTS_DOC = 'departments';
+const MENU_DOC = 'menu';
+const FOOTER_DOC = 'footer';
+const SITE_CONTENT_DOC = 'siteContent';
+const CUSTOM_PAGES_DOC = 'customPages';
 
 // --- SITE IMAGES ---
 export const subscribeToSiteImages = (
@@ -90,9 +97,9 @@ export const updateAnnouncement = async (announcement: Partial<AnnouncementSetti
   }, { merge: true });
 };
 
-// --- LAB INFO ---
+// --- LAB INFO & CONTACT ---
 export const subscribeToLabInfo = (
-  onData: (info: typeof LAB_INFO) => void,
+  onData: (info: LabInfo) => void,
   onError?: (error: Error) => void
 ) => {
   const docRef = doc(db, COLLECTION_NAME, LAB_INFO_DOC);
@@ -100,7 +107,7 @@ export const subscribeToLabInfo = (
     docRef,
     (docSnap) => {
       if (docSnap.exists()) {
-        onData(docSnap.data() as typeof LAB_INFO);
+        onData(docSnap.data() as LabInfo);
       }
     },
     (error) => {
@@ -110,16 +117,134 @@ export const subscribeToLabInfo = (
   );
 };
 
-export const getLabInfo = async (): Promise<typeof LAB_INFO | null> => {
+export const getLabInfo = async (): Promise<LabInfo | null> => {
   const docRef = doc(db, COLLECTION_NAME, LAB_INFO_DOC);
   const snap = await getDoc(docRef);
-  return snap.exists() ? (snap.data() as typeof LAB_INFO) : null;
+  return snap.exists() ? (snap.data() as LabInfo) : null;
 };
 
-export const updateLabInfo = async (info: Partial<typeof LAB_INFO>): Promise<void> => {
+export const updateLabInfo = async (info: Partial<LabInfo>): Promise<void> => {
   const docRef = doc(db, COLLECTION_NAME, LAB_INFO_DOC);
   await setDoc(docRef, {
     ...info,
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+};
+
+// --- MENU / NAVIGATION ---
+export const subscribeToMenuItems = (
+  onData: (items: MenuItem[]) => void,
+  onError?: (error: Error) => void
+) => {
+  const docRef = doc(db, COLLECTION_NAME, MENU_DOC);
+  return onSnapshot(
+    docRef,
+    (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        if (data && Array.isArray(data.items)) {
+          onData(data.items as MenuItem[]);
+        }
+      }
+    },
+    (error) => {
+      console.error('Error listening to menu items:', error);
+      if (onError) onError(error);
+    }
+  );
+};
+
+export const updateMenuItems = async (items: MenuItem[]): Promise<void> => {
+  const docRef = doc(db, COLLECTION_NAME, MENU_DOC);
+  await setDoc(docRef, {
+    items,
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+};
+
+// --- FOOTER CONFIG ---
+export const subscribeToFooterConfig = (
+  onData: (footer: FooterConfig) => void,
+  onError?: (error: Error) => void
+) => {
+  const docRef = doc(db, COLLECTION_NAME, FOOTER_DOC);
+  return onSnapshot(
+    docRef,
+    (docSnap) => {
+      if (docSnap.exists()) {
+        onData(docSnap.data() as FooterConfig);
+      }
+    },
+    (error) => {
+      console.error('Error listening to footer config:', error);
+      if (onError) onError(error);
+    }
+  );
+};
+
+export const updateFooterConfig = async (footer: Partial<FooterConfig>): Promise<void> => {
+  const docRef = doc(db, COLLECTION_NAME, FOOTER_DOC);
+  await setDoc(docRef, {
+    ...footer,
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+};
+
+// --- WEBSITE CMS TEXT CONTENT ---
+export const subscribeToSiteContent = (
+  onData: (content: SiteContentConfig) => void,
+  onError?: (error: Error) => void
+) => {
+  const docRef = doc(db, COLLECTION_NAME, SITE_CONTENT_DOC);
+  return onSnapshot(
+    docRef,
+    (docSnap) => {
+      if (docSnap.exists()) {
+        onData(docSnap.data() as SiteContentConfig);
+      }
+    },
+    (error) => {
+      console.error('Error listening to site content:', error);
+      if (onError) onError(error);
+    }
+  );
+};
+
+export const updateSiteContent = async (content: Partial<SiteContentConfig>): Promise<void> => {
+  const docRef = doc(db, COLLECTION_NAME, SITE_CONTENT_DOC);
+  await setDoc(docRef, {
+    ...content,
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+};
+
+// --- CUSTOM PAGES CMS ---
+export const subscribeToCustomPages = (
+  onData: (pages: CustomPageItem[]) => void,
+  onError?: (error: Error) => void
+) => {
+  const docRef = doc(db, COLLECTION_NAME, CUSTOM_PAGES_DOC);
+  return onSnapshot(
+    docRef,
+    (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        if (data && Array.isArray(data.items)) {
+          onData(data.items as CustomPageItem[]);
+        }
+      }
+    },
+    (error) => {
+      console.error('Error listening to custom pages:', error);
+      if (onError) onError(error);
+    }
+  );
+};
+
+export const updateCustomPages = async (pages: CustomPageItem[]): Promise<void> => {
+  const docRef = doc(db, COLLECTION_NAME, CUSTOM_PAGES_DOC);
+  await setDoc(docRef, {
+    items: pages,
     updatedAt: serverTimestamp()
   }, { merge: true });
 };
@@ -145,16 +270,6 @@ export const subscribeToDepartments = (
       if (onError) onError(error);
     }
   );
-};
-
-export const getDepartments = async (): Promise<DiagnosticDepartment[] | null> => {
-  const docRef = doc(db, COLLECTION_NAME, DEPARTMENTS_DOC);
-  const snap = await getDoc(docRef);
-  if (snap.exists()) {
-    const data = snap.data();
-    return data && Array.isArray(data.items) ? (data.items as DiagnosticDepartment[]) : null;
-  }
-  return null;
 };
 
 export const updateDepartments = async (items: DiagnosticDepartment[]): Promise<void> => {

@@ -3,11 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React, { useState, useEffect } from 'react';
 import { PageType, CartItem, TestItem, HealthPackage, PatientReportRecord } from './types';
 import { Header } from './components/Header';
@@ -24,6 +19,9 @@ import { WhyChooseUsView } from './pages/WhyChooseUsView';
 import { PatientReportsView } from './pages/PatientReportsView';
 import { BlogView } from './pages/BlogView';
 import { BookTestView } from './pages/BookTestView';
+import { ContactView } from './pages/ContactView';
+import { FAQView } from './pages/FAQView';
+import { CustomPageView } from './pages/CustomPageView';
 import { AdminDashboardView } from './pages/AdminDashboardView';
 import { AdminLoginView } from './pages/AdminLoginView';
 
@@ -222,6 +220,25 @@ export default function App() {
           />
         )}
 
+        {currentPage === 'contact' && (
+          <ContactView
+            onNavigate={handleNavigate}
+          />
+        )}
+
+        {currentPage === 'faq' && (
+          <FAQView
+            onNavigate={handleNavigate}
+          />
+        )}
+
+        {currentPage === 'custom-page' && (
+          <CustomPageView
+            slug={pageParam || undefined}
+            onNavigate={handleNavigate}
+          />
+        )}
+
         {(currentPage === 'blog' || currentPage === 'blog-post') && (
           <BlogView
             initialSlug={pageParam}
@@ -258,8 +275,6 @@ export default function App() {
       {!isAdminSection && (
         <Footer
           onNavigate={handleNavigate}
-          onOpenPrescription={() => setIsPrescriptionOpen(true)}
-          onOpenBooking={() => handleBookNow()}
           onOpenWhatsApp={() => setIsWhatsAppOpen(true)}
         />
       )}
@@ -270,7 +285,7 @@ export default function App() {
           {/* WhatsApp Quick Button */}
           <button
             onClick={() => setIsWhatsAppOpen(true)}
-            className="p-3.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl shadow-xl shadow-emerald-900/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 group"
+            className="p-3.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl shadow-xl shadow-emerald-900/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 group cursor-pointer"
             title="Chat with Diagnostic Desk on WhatsApp"
           >
             <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
@@ -283,7 +298,7 @@ export default function App() {
           {cart.length > 0 && (
             <button
               onClick={() => setIsCartOpen(true)}
-              className="p-3.5 bg-sky-900 hover:bg-sky-800 text-white rounded-2xl shadow-xl shadow-sky-950/25 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+              className="p-3.5 bg-sky-900 hover:bg-sky-800 text-white rounded-2xl shadow-xl shadow-sky-950/25 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
             >
               <div className="relative">
                 <span className="w-2.5 h-2.5 bg-teal-400 rounded-full absolute -top-1 -right-1 ring-2 ring-sky-900 animate-pulse"></span>
@@ -360,4 +375,3 @@ export default function App() {
     </div>
   );
 }
-

@@ -249,3 +249,6 @@ export const updateAdminUserPassword = async (
 
   return { success: true, message: 'Admin password updated successfully!' };
 };
+
+export const authenticateAdmin = loginAdminUser;
+export const updateAdminPassword = updateAdminUserPassword;

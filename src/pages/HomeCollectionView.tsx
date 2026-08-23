@@ -15,7 +15,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { PageType, CartItem } from '../types';
-import { LAB_INFO } from '../data/labData';
+import { useData } from '../context/DataContext';
 
 interface HomeCollectionViewProps {
   onNavigate: (page: PageType) => void;
@@ -28,6 +28,7 @@ export const HomeCollectionView: React.FC<HomeCollectionViewProps> = ({
   onOpenBooking,
   onOpenWhatsApp
 }) => {
+  const { siteContent, labInfo, siteImages } = useData();
   const [pincode, setPincode] = useState('');
   const [pincodeStatus, setPincodeStatus] = useState<'idle' | 'checking' | 'available' | 'unavailable'>('idle');
 
@@ -50,13 +51,13 @@ export const HomeCollectionView: React.FC<HomeCollectionViewProps> = ({
         <div className="bg-gradient-to-r from-blue-950 via-slate-900 to-teal-950 text-white rounded-3xl p-8 sm:p-14 relative overflow-hidden">
           <div className="max-w-3xl space-y-4 relative z-10">
             <span className="px-3 py-1 bg-teal-500/20 text-teal-300 text-xs font-bold rounded-full border border-teal-500/30 uppercase tracking-wider inline-block">
-              Doorstep Diagnostic Service
+              {siteContent?.homeCollection?.badgeText || 'Doorstep Diagnostic Service'}
             </span>
             <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight font-display">
-              Home Sample Collection
+              {siteContent?.homeCollection?.headline || 'Home Sample Collection'}
             </h1>
             <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-              Experience the utmost convenience of certified phlebotomists collecting your blood and pathology samples right at your doorstep with stringent biosafety and temperature control.
+              {siteContent?.homeCollection?.subheadline || 'Experience the utmost convenience of certified phlebotomists collecting your blood and pathology samples right at your doorstep with stringent biosafety and temperature control.'}
             </p>
 
             <div className="flex flex-wrap items-center gap-3 pt-2">

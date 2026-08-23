@@ -18,10 +18,11 @@ import { useData } from '../context/DataContext';
 
 interface AboutViewProps {
   onNavigate: (page: PageType) => void;
+  onOpenWhatsApp?: () => void;
 }
 
-export const AboutView: React.FC<AboutViewProps> = ({ onNavigate }) => {
-  const { siteImages } = useData();
+export const AboutView: React.FC<AboutViewProps> = ({ onNavigate, onOpenWhatsApp }) => {
+  const { siteImages, siteContent, labInfo } = useData();
   return (
     <div className="space-y-16 sm:space-y-20 py-8">
       
@@ -30,13 +31,13 @@ export const AboutView: React.FC<AboutViewProps> = ({ onNavigate }) => {
         <div className="bg-gradient-to-r from-blue-950 via-slate-900 to-teal-950 text-white rounded-3xl p-8 sm:p-14 relative overflow-hidden">
           <div className="max-w-3xl space-y-4 relative z-10">
             <span className="px-3 py-1 bg-teal-500/20 text-teal-300 text-xs font-bold rounded-full border border-teal-500/30 uppercase tracking-wider inline-block">
-              About Our Laboratory
+              {siteContent?.about?.badgeText || 'About Our Laboratory'}
             </span>
             <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight font-display">
-              Microcells Diagnostics Pvt. Ltd.
+              {siteContent?.about?.headline || labInfo?.companyName || 'Microcells Diagnostics Pvt. Ltd.'}
             </h1>
             <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-              Committed to providing dependable pathology and diagnostic services using modern technology, standardized processes, skilled professionals, and quality-focused laboratory practices.
+              {siteContent?.about?.subheadline || 'Committed to providing dependable pathology and diagnostic services using modern technology, standardized processes, skilled professionals, and quality-focused laboratory practices.'}
             </p>
           </div>
         </div>
@@ -52,7 +53,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ onNavigate }) => {
             </h2>
 
             <p>
-              Microcells Diagnostics Pvt. Ltd. was established with a singular objective: to make high-accuracy pathology and diagnostic testing accessible, seamless, and patient-friendly. In modern clinical practice, diagnostic findings influence a significant majority of clinical decisions. We take this responsibility with the utmost diligence.
+              {siteContent?.about?.mission || `${labInfo?.companyName || 'Microcells Diagnostics Pvt. Ltd.'} was established with a singular objective: to make high-accuracy pathology and diagnostic testing accessible, seamless, and patient-friendly. In modern clinical practice, diagnostic findings influence a significant majority of clinical decisions. We take this responsibility with the utmost diligence.`}
             </p>
 
             <p>

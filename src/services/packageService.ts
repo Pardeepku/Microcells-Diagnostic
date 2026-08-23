@@ -98,3 +98,11 @@ export const togglePopularPackage = async (
     updatedAt: serverTimestamp()
   });
 };
+
+export const savePackage = async (pkg: HealthPackage): Promise<void> => {
+  const docRef = doc(db, COLLECTION_NAME, pkg.id);
+  await setDoc(docRef, {
+    ...pkg,
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+};

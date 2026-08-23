@@ -6,14 +6,20 @@ import {
   FAQItem, 
   PatientReportRecord,
   SiteImagesConfig,
-  SiteImageMeta
+  SiteImageMeta,
+  LabInfo,
+  MenuItem,
+  FooterConfig,
+  SiteContentConfig,
+  CustomPageItem
 } from '../types';
 
-export const LAB_INFO = {
+export const LAB_INFO: LabInfo = {
   companyName: "Microcells Diagnostics Pvt. Ltd.",
   tradeName: "Micro Cells Diagnostics",
   tagline: "Accurate Diagnostics. Better Healthcare.",
   subTagline: "Advanced pathology testing with reliable results, modern technology, and patient-focused care.",
+  brandLogoUrl: "",
   phone: "+91 98765 43210",
   altPhone: "+91 11 2345 6789",
   whatsappNumber: "+919876543210",
@@ -22,11 +28,18 @@ export const LAB_INFO = {
   supportEmail: "reports@microcellsdiagnostics.com",
   address: "Plot 104, Medical Hub & Diagnostic Centre, Healthcare Avenue, Phase-1, City - 400001",
   landmark: "Near Central Metro Station, Gate No. 2",
+  city: "City",
+  pincode: "400001",
   timings: "Mon - Sat: 7:00 AM – 9:00 PM | Sunday: 7:00 AM – 2:00 PM",
   homeCollectionTimings: "6:30 AM – 7:30 PM (Daily)",
   emergencyContact: "+91 98765 43211",
+  nablAccreditationText: "NABL Accredited Reference Laboratory (MC-2024-8841)",
+  isoAccreditationText: "ISO 15189:2022 Certified Medical Testing Laboratory",
+  icmrRegNumber: "ICMR-REG-IND-9941",
+  gstNumber: "27AAACM1234F1Z5",
   branches: [
     {
+      id: "branch-hq",
       name: "Central Reference Laboratory",
       address: "Plot 104, Healthcare Avenue, Phase-1, City - 400001",
       phone: "+91 98765 43210",
@@ -34,6 +47,7 @@ export const LAB_INFO = {
       isHQ: true
     },
     {
+      id: "branch-north",
       name: "North City Collection Centre",
       address: "Shop 12, Sunrise Medical Complex, North Boulevard, City - 400018",
       phone: "+91 98765 43212",
@@ -41,6 +55,7 @@ export const LAB_INFO = {
       isHQ: false
     },
     {
+      id: "branch-west",
       name: "Westside Diagnostic Point",
       address: "Unit 3B, Wellness Arcade, West Ring Road, City - 400045",
       phone: "+91 98765 43213",
@@ -49,6 +64,241 @@ export const LAB_INFO = {
     }
   ]
 };
+
+export const DEFAULT_MENU_ITEMS: MenuItem[] = [
+  { id: 'menu-home', label: 'Home', page: 'home', enabled: true, order: 1 },
+  { id: 'menu-about', label: 'About Us', page: 'about', enabled: true, order: 2 },
+  { id: 'menu-services', label: 'Services', page: 'services', enabled: true, order: 3 },
+  { id: 'menu-packages', label: 'Packages', page: 'packages', enabled: true, order: 4, highlight: true },
+  { id: 'menu-tests', label: 'All Tests', page: 'tests', enabled: true, order: 5 },
+  { id: 'menu-home-collection', label: 'Home Collection', page: 'home-collection', enabled: true, order: 6 },
+  { id: 'menu-why-us', label: 'Why Us', page: 'why-choose-us', enabled: true, order: 7 },
+  { id: 'menu-faqs', label: 'FAQs', page: 'faq', enabled: true, order: 8 },
+  { id: 'menu-blog', label: 'Blog', page: 'blog', enabled: true, order: 9 },
+  { id: 'menu-contact', label: 'Contact', page: 'contact', enabled: true, order: 10 }
+];
+
+export const DEFAULT_FOOTER_CONFIG: FooterConfig = {
+  aboutText: "Microcells Diagnostics Pvt. Ltd. is a dedicated diagnostic and pathology testing laboratory offering reliable results, advanced technology, standardized processes, and patient-focused care.",
+  accreditationHeadline: "Committed to Clinical Precision & Patient Safety",
+  accreditationSubtext: "Standardized diagnostic protocols, barcoded sample tracking, automated analyzers, and stringent internal quality controls.",
+  copyrightText: "© 2026 Microcells Diagnostics Pvt. Ltd. All rights reserved.",
+  medicalDisclaimer: "Medical Disclaimer: Diagnostic test results and online reports are intended solely to assist clinical medical practitioners in patient care and diagnosis. They should always be correlated clinically with patient medical history.",
+  showQuickLinks: true,
+  showDepartments: true,
+  showContactInfo: true,
+  showAccreditationBanner: true
+};
+
+export const DEFAULT_SITE_CONTENT: SiteContentConfig = {
+  hero: {
+    badge: "Accredited Pathology Laboratory",
+    headline: "Precision Pathology & Diagnostics You Can",
+    headlineHighlight: "Trust With Every Report",
+    subheadline: "State-of-the-art fully automated analyzers, certified barcoded sample tracking, rapid turnarounds, and compassionate home sample collection.",
+    primaryCtaText: "Book Test / Home Collection",
+    secondaryCtaText: "Explore Health Packages",
+    stat1Value: "99.8%",
+    stat1Label: "Clinical Accuracy",
+    stat2Value: "6-8 Hrs",
+    stat2Label: "Average Turnaround",
+    stat3Value: "100%",
+    stat3Label: "Barcoded Tracking",
+    stat4Value: "50,000+",
+    stat4Label: "Satisfied Patients",
+    trustPoints: [
+      "NABL & ISO Protocol Testing",
+      "Daily Internal & External QC Checks",
+      "Fast Online Report PDF & WhatsApp Delivery",
+      "Doorstep Phlebotomy in Sealed Vacuum Kits"
+    ]
+  },
+  about: {
+    title: "About Microcells Diagnostics",
+    subtitle: "Built on Clinical Integrity, Precision Technology, and Patient Dignity",
+    missionStatement: "To deliver reliable, fast, and accessible diagnostic testing that empowers clinicians and patients to make well-informed healthcare decisions.",
+    visionStatement: "To be the most trusted pathology and diagnostic reference network recognized for technological excellence and clinical accuracy.",
+    qualityCommitment: "Every biological specimen undergoes rigorous multi-level verification supervised by certified MD Pathologists, adhering to stringent clinical quality control standards.",
+    storyParagraph1: "Founded by veteran pathologist Dr. Anand Verma and clinical laboratory technologists, Microcells Diagnostics was established with a clear mandate: making top-tier diagnostic precision accessible with complete transparency and patient compassion.",
+    storyParagraph2: "Operating from our advanced Central Reference Laboratory and regional collection centers, we run high-throughput automated analyzers with barcoded primary tube sampling, minimizing pre-analytical and analytical errors.",
+    keyDifferentiators: [
+      "Zero Pre-analytical Sample Mix-up Guarantee (Dual-Scan Barcoding)",
+      "Automated Primary Tube Sampling without manual pipetting risks",
+      "All Abnormal Values Reviewed Personally by MD Pathologists",
+      "Temperature-controlled cold-chain specimen transport boxes"
+    ]
+  },
+  homeCollection: {
+    headline: "Doorstep Home Sample Collection",
+    subheadline: "Comfortable, safe, and hygienic blood and urine collection at your home or workplace by certified phlebotomists.",
+    badge: "Available 7 Days a Week (6:30 AM – 7:30 PM)",
+    perks: [
+      { title: "Sterile Single-Use Kits", desc: "Sealed, sterile vacutainers opened right in front of you." },
+      { title: "Cold-Chain Specimen Boxes", desc: "Temperature monitored specimen carriers ensure sample integrity." },
+      { title: "Trained Gentle Phlebotomists", desc: "Experienced phlebotomy technicians with pain-free venipuncture technique." },
+      { title: "Digital Barcode Tagging", desc: "Samples barcoded and linked to your UHID on the spot." }
+    ],
+    instructions: [
+      "Select your tests or packages and pick a convenient morning or evening time slot.",
+      "Our phlebotomist arrives equipped with sterile single-use vacuum collection tubes.",
+      "Your sample is securely transported in cold-chain containers to our Central Laboratory.",
+      "Receive digital PDF reports via WhatsApp, SMS alert, and download from our portal."
+    ]
+  },
+  whyChooseUs: {
+    headline: "Why Clinicians & Families Trust Microcells",
+    subheadline: "Every step of our laboratory workflow is engineered for clinical accuracy, turnaround speed, and patient convenience.",
+    features: [
+      {
+        id: "feat-1",
+        title: "Automated Clinical Analyzers",
+        description: "Fully automated biochemistry and hematology lines prevent manual pipetting discrepancies and ensure reproducible test values.",
+        icon: "Cpu"
+      },
+      {
+        id: "feat-2",
+        title: "100% Barcoded Sample Journey",
+        description: "From the moment blood is drawn to the final pathologist sign-off, every tube is tracked with unique barcode scanners.",
+        icon: "QrCode"
+      },
+      {
+        id: "feat-3",
+        title: "Dual-Tier Quality Control",
+        description: "Daily two-level internal quality control runs plus third-party EQAS participation validate instrument calibration.",
+        icon: "ShieldCheck"
+      },
+      {
+        id: "feat-4",
+        title: "Rapid Same-Day Digital Reports",
+        description: "Over 85% of routine parameters are processed and authorized within 4 to 8 hours with instant WhatsApp and PDF delivery.",
+        icon: "Zap"
+      },
+      {
+        id: "feat-5",
+        title: "Certified MD Pathologist Review",
+        description: "Abnormal or critical findings trigger immediate re-testing and personalized review by our senior consultant pathologists.",
+        icon: "UserCheck"
+      },
+      {
+        id: "feat-6",
+        title: "Transparent & Affordable Pricing",
+        description: "Honest diagnostic pricing with no hidden charges, plus discounted preventive wellness packages for families.",
+        icon: "HeartHandshake"
+      }
+    ]
+  },
+  contact: {
+    headline: "We Are Here To Assist You",
+    subheadline: "Have questions about test preparation, report delivery, home collection, or corporate checkups? Reach out to our team.",
+    helpdeskTitle: "Central Diagnostic Helpdesk",
+    helpdeskDesc: "Our customer desk and pathology support team are available 7 days a week to guide you."
+  },
+  footer: DEFAULT_FOOTER_CONFIG
+};
+
+export const DEFAULT_CUSTOM_PAGES: CustomPageItem[] = [
+  {
+    id: "page-corporate-wellness",
+    slug: "corporate-wellness",
+    title: "Corporate & Workplace Health Checkups",
+    subtitle: "Customized annual employee health screening and on-site corporate diagnostic camps",
+    bannerImageUrl: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1200&q=80",
+    content: `## Annual Corporate Health Screening Programs
+
+Microcells Diagnostics partners with corporate enterprises, educational institutions, and industrial organizations to deliver comprehensive on-site and in-lab employee health screening.
+
+### Why Choose Microcells for Corporate Health?
+- **On-Site Phlebotomy Camps**: Our team sets up hygienic, sterile sample collection stations directly at your office or campus premises.
+- **Custom Panel Configuration**: Tailor health packages according to employee demographics, executive profiles, and workplace health guidelines.
+- **Dedicated Corporate Account Manager**: End-to-end coordination, consolidated billing, and seamless scheduling.
+- **Confidential Digital Reports**: Secure individual report delivery to employees with aggregated anonymous health trend analytics for HR/Leadership.
+
+### Contact Our Corporate Desk
+To plan a customized health checkup program for your organization, reach out to our corporate relations desk at **contact@microcellsdiagnostics.com** or call **+91 98765 43210**.`,
+    showInMenu: true,
+    showInFooter: true,
+    metaDescription: "Corporate employee health screening packages and on-site blood collection camps by Microcells Diagnostics.",
+    published: true,
+    createdAt: "2026-01-10T10:00:00.000Z",
+    updatedAt: "2026-08-20T12:00:00.000Z"
+  },
+  {
+    id: "page-sample-collection-guidelines",
+    slug: "sample-collection-guidelines",
+    title: "Patient Sample Collection & Preparation Guidelines",
+    subtitle: "Essential instructions for accurate fasting, medication timing, and urine/stool collection",
+    bannerImageUrl: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1200&q=80",
+    content: `## Patient Preparation Instructions for Diagnostic Accuracy
+
+Proper pre-test preparation is critical for obtaining clinically meaningful laboratory test results.
+
+### 1. Fasting Guidelines (Lipid Profile, Glucose Fasting, LFT)
+- **10 to 12 Hours Fasting**: Do not consume any food, tea, coffee, milk, juices, or snacks after dinner.
+- **Hydration**: You may drink plain water in normal amounts. Staying well-hydrated makes blood sample collection easier.
+- **Diabetic Patients**: If you take insulin or oral anti-diabetic medication, please bring your medication with you. Take morning doses only *after* fasting blood samples are collected, unless specifically advised otherwise by your doctor.
+
+### 2. Blood Sugar PP (Post-Prandial)
+- Blood sample must be drawn **exactly 2 hours** from the start of your main meal (breakfast or lunch).
+
+### 3. Urine Routine & Culture Testing
+- **Clean Catch Mid-Stream**: Cleanse the genital area thoroughly with water. Collect the mid-stream portion into the sterile container provided by the laboratory.
+- **First Morning Urine**: Preferred for pregnancy tests and protein/microalbumin evaluation.`,
+    showInMenu: true,
+    showInFooter: true,
+    metaDescription: "Fasting and preparation guidelines for laboratory pathology blood and urine tests at Microcells Diagnostics.",
+    published: true,
+    createdAt: "2026-01-15T10:00:00.000Z",
+    updatedAt: "2026-08-20T12:00:00.000Z"
+  },
+  {
+    id: "page-privacy-policy",
+    slug: "privacy-policy",
+    title: "Privacy Policy & Patient Data Protection",
+    subtitle: "How Microcells Diagnostics secures your medical data and health records",
+    content: `## Patient Privacy & Confidentiality Commitment
+
+At Microcells Diagnostics Pvt. Ltd., we treat your personal and diagnostic medical records with strict confidentiality in accordance with medical ethics and applicable data protection regulations.
+
+### Data Collection & Usage
+- We collect patient demographic information (Name, Age, Gender, Mobile, Email, Address) solely for test identification, barcode generation, reporting, and statutory medical compliance.
+- Diagnostic test results are confidential and are released exclusively to the patient or authorized referring clinician.
+
+### Secure Digital Infrastructure
+- All digital reports are stored with encryption and accessible only through verified credentials or secure one-time mobile verification.
+- We do not sell or rent patient personal or medical information to any third parties under any circumstances.`,
+    showInMenu: false,
+    showInFooter: true,
+    metaDescription: "Patient data privacy and diagnostic medical record security policy of Microcells Diagnostics.",
+    published: true,
+    createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-08-20T12:00:00.000Z"
+  },
+  {
+    id: "page-terms-of-service",
+    slug: "terms-of-service",
+    title: "Terms & Conditions of Diagnostic Services",
+    subtitle: "Terms governing test bookings, turnaround times, and laboratory policies",
+    content: `## Terms & Conditions of Diagnostic Testing
+
+By booking diagnostic tests, health packages, or home collection with Microcells Diagnostics Pvt. Ltd., you agree to the following terms:
+
+### 1. Test Turnaround Times
+- Reported turnaround times are estimates based on standard clinical processing. In cases requiring test repetition for biological validation, reflex testing, or machine calibration, turnaround may be extended to ensure precision.
+
+### 2. Clinical Correlation
+- Laboratory test results must always be interpreted by a registered medical practitioner in conjunction with clinical symptoms and history. Diagnostic reports are aids to clinical judgment and do not replace physical medical consultations.
+
+### 3. Home Sample Collection
+- Home collection appointments are scheduled in flexible 30–60 minute arrival windows. Severe weather or traffic contingencies will be communicated promptly by our phlebotomy coordinator.`,
+    showInMenu: false,
+    showInFooter: true,
+    metaDescription: "Terms of service and diagnostic test policies for Microcells Diagnostics Pvt. Ltd.",
+    published: true,
+    createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-08-20T12:00:00.000Z"
+  }
+];
+
 
 export const POPULAR_TESTS: TestItem[] = [
   {
@@ -1154,10 +1404,37 @@ export const DEFAULT_SITE_IMAGES: SiteImagesConfig = {
   doctorAnand: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=600&q=80',
   doctorPriya: 'https://images.unsplash.com/photo-1594824813571-638f02614d3f?auto=format&fit=crop&w=600&q=80',
   doctorRajesh: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=600&q=80',
-  brandLogoUrl: ''
+  brandLogoUrl: '',
+  headerLogoUrl: '',
+  footerLogoUrl: '',
+  faviconUrl: ''
 };
 
 export const SITE_IMAGE_REGISTRY: SiteImageMeta[] = [
+  {
+    key: 'brandLogoUrl',
+    title: 'Laboratory Brand Logo',
+    section: 'Branding & Logos',
+    description: 'The official laboratory logo displayed in the header navigation bar, mobile menu, and footer.',
+    recommendedSize: '400 × 120 px (Transparent PNG / SVG)',
+    defaultUrl: ''
+  },
+  {
+    key: 'headerLogoUrl',
+    title: 'Top Header Navigation Logo',
+    section: 'Branding & Logos',
+    description: 'Specific logo variation rendered inside the top navigation bar.',
+    recommendedSize: '360 × 90 px (Transparent PNG / SVG)',
+    defaultUrl: ''
+  },
+  {
+    key: 'footerLogoUrl',
+    title: 'Footer Dark Theme Logo',
+    section: 'Branding & Logos',
+    description: 'High-contrast logo graphic tailored for the dark navy footer background.',
+    recommendedSize: '360 × 90 px (White / Color on Dark)',
+    defaultUrl: ''
+  },
   {
     key: 'homeHeroBanner',
     title: 'Homepage Hero Banner Card',

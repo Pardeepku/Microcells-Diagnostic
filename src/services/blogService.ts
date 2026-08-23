@@ -83,3 +83,12 @@ export const deleteBlogPost = async (id: string): Promise<void> => {
   const docRef = doc(db, COLLECTION_NAME, id);
   await deleteDoc(docRef);
 };
+
+export const saveBlogPost = async (post: BlogPost): Promise<void> => {
+  const docRef = doc(db, COLLECTION_NAME, post.id || post.slug);
+  await setDoc(docRef, {
+    ...post,
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+};
+

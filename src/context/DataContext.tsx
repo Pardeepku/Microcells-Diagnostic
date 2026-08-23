@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { 
   TestItem, 
   HealthPackage, 
@@ -6,11 +6,16 @@ import {
   FAQItem, 
   BookingRequest, 
   PatientReportRecord, 
-  DiagnosticDepartment,
-  AnnouncementSettings,
-  AdminUser,
-  AdminCredential,
-  SiteImagesConfig
+  DiagnosticDepartment, 
+  AnnouncementSettings, 
+  AdminUser, 
+  AdminCredential, 
+  SiteImagesConfig,
+  LabInfo,
+  MenuItem,
+  FooterConfig,
+  SiteContentConfig,
+  CustomPageItem
 } from '../types';
 import { 
   POPULAR_TESTS, 
@@ -19,8 +24,12 @@ import {
   FAQS, 
   SAMPLE_PATIENT_REPORTS, 
   LAB_INFO, 
-  DIAGNOSTIC_DEPARTMENTS,
-  DEFAULT_SITE_IMAGES
+  DIAGNOSTIC_DEPARTMENTS, 
+  DEFAULT_SITE_IMAGES,
+  DEFAULT_MENU_ITEMS,
+  DEFAULT_FOOTER_CONFIG,
+  DEFAULT_SITE_CONTENT,
+  DEFAULT_CUSTOM_PAGES
 } from '../data/labData';
 import * as testService from '../services/testService';
 import * as packageService from '../services/packageService';
@@ -49,10 +58,14 @@ interface DataContextType {
   blogPosts: BlogPost[];
   bookings: BookingRequest[];
   patientReports: PatientReportRecord[];
-  labInfo: typeof LAB_INFO;
+  labInfo: LabInfo;
   departments: DiagnosticDepartment[];
   announcement: AnnouncementSettings;
   siteImages: SiteImagesConfig;
+  menuItems: MenuItem[];
+  footerConfig: FooterConfig;
+  siteContent: SiteContentConfig;
+  customPages: CustomPageItem[];
   isFirebaseLoading: boolean;
 
   // Tests CRUD
@@ -87,10 +100,28 @@ interface DataContextType {
   updatePatientReport: (uhid: string, report: Partial<PatientReportRecord>) => void;
   deletePatientReport: (uhid: string) => void;
 
-  // Lab Info & Settings
-  updateLabInfo: (info: Partial<typeof LAB_INFO>) => void;
+  // Lab Info & Branding & Contact
+  updateLabInfo: (info: Partial<LabInfo>) => void;
   updateAnnouncement: (announcement: Partial<AnnouncementSettings>) => void;
   updateDepartment: (id: string, dept: Partial<DiagnosticDepartment>) => void;
+
+  // Menu Bar Management
+  updateMenuItems: (items: MenuItem[]) => void;
+  addMenuItem: (item: Omit<MenuItem, 'id'>) => MenuItem;
+  deleteMenuItem: (id: string) => void;
+  toggleMenuItem: (id: string) => void;
+
+  // Footer Management
+  updateFooterConfig: (footer: Partial<FooterConfig>) => void;
+
+  // Website CMS Text Content
+  updateSiteContent: (content: Partial<SiteContentConfig>) => void;
+  updateSiteContentSection: <K extends keyof SiteContentConfig>(section: K, data: Partial<SiteContentConfig[K]>) => void;
+
+  // Custom Pages Management
+  addCustomPage: (page: Omit<CustomPageItem, 'id' | 'createdAt' | 'updatedAt'>) => CustomPageItem;
+  updateCustomPage: (id: string, page: Partial<CustomPageItem>) => void;
+  deleteCustomPage: (id: string) => void;
 
   // Site Images & Media
   updateSiteImage: (key: keyof SiteImagesConfig, url: string) => void;
@@ -123,10 +154,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>(BLOG_POSTS);
   const [bookings, setBookings] = useState<BookingRequest[]>([]);
   const [patientReports, setPatientReports] = useState<PatientReportRecord[]>(SAMPLE_PATIENT_REPORTS);
-  const [labInfo, setLabInfo] = useState<typeof LAB_INFO>(LAB_INFO);
+  const [labInfo, setLabInfo] = useState<LabInfo>(LAB_INFO);
   const [departments, setDepartments] = useState<DiagnosticDepartment[]>(DIAGNOSTIC_DEPARTMENTS);
   const [announcement, setAnnouncement] = useState<AnnouncementSettings>(INITIAL_ANNOUNCEMENT);
   const [siteImages, setSiteImages] = useState<SiteImagesConfig>(DEFAULT_SITE_IMAGES);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>(DEFAULT_MENU_ITEMS);
+  const [footerConfig, setFooterConfig] = useState<FooterConfig>(DEFAULT_FOOTER_CONFIG);
+  const [siteContent, setSiteContent] = useState<SiteContentConfig>(DEFAULT_SITE_CONTENT);
+  const [customPages, setCustomPages] = useState<CustomPageItem[]>(DEFAULT_CUSTOM_PAGES);
   const [adminAccounts, setAdminAccounts] = useState<AdminCredential[]>(authService.DEFAULT_ADMIN_ACCOUNTS);
   const [isFirebaseLoading, setIsFirebaseLoading] = useState(true);
 
@@ -160,77 +195,62 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // 2. Real-time Firestore Subscriptions
   useEffect(() => {
-    // Tests subscription
     const unsubTests = testService.subscribeToTests((data) => {
-      if (data && data.length > 0) {
-        setTests(data);
-      }
+      if (data && data.length > 0) setTests(data);
     });
 
-    // Packages subscription
     const unsubPackages = packageService.subscribeToPackages((data) => {
-      if (data && data.length > 0) {
-        setPackages(data);
-      }
+      if (data && data.length > 0) setPackages(data);
     });
 
-    // FAQs subscription
     const unsubFaqs = faqService.subscribeToFAQs((data) => {
-      if (data && data.length > 0) {
-        setFaqs(data);
-      }
+      if (data && data.length > 0) setFaqs(data);
     });
 
-    // Blog posts subscription
     const unsubBlog = blogService.subscribeToBlogPosts((data) => {
-      if (data && data.length > 0) {
-        setBlogPosts(data);
-      }
+      if (data && data.length > 0) setBlogPosts(data);
     });
 
-    // Bookings subscription
     const unsubBookings = bookingService.subscribeToBookings((data) => {
-      if (data) {
-        setBookings(data);
-      }
+      if (data) setBookings(data);
     });
 
-    // Patient Reports subscription
     const unsubReports = reportService.subscribeToPatientReports((data) => {
-      if (data && data.length > 0) {
-        setPatientReports(data);
-      }
+      if (data && data.length > 0) setPatientReports(data);
     });
 
-    // Site Images subscription
     const unsubImages = siteService.subscribeToSiteImages((data) => {
-      if (data) {
-        setSiteImages((prev) => ({ ...prev, ...data }));
-      }
+      if (data) setSiteImages((prev) => ({ ...prev, ...data }));
     });
 
-    // Announcement subscription
     const unsubAnnouncement = siteService.subscribeToAnnouncement((data) => {
-      if (data) {
-        setAnnouncement((prev) => ({ ...prev, ...data }));
-      }
+      if (data) setAnnouncement((prev) => ({ ...prev, ...data }));
     });
 
-    // Lab Info subscription
     const unsubLabInfo = siteService.subscribeToLabInfo((data) => {
-      if (data) {
-        setLabInfo((prev) => ({ ...prev, ...data }));
-      }
+      if (data) setLabInfo((prev) => ({ ...prev, ...data }));
     });
 
-    // Departments subscription
     const unsubDepartments = siteService.subscribeToDepartments((data) => {
-      if (data && data.length > 0) {
-        setDepartments(data);
-      }
+      if (data && data.length > 0) setDepartments(data);
     });
 
-    // Load admin accounts
+    const unsubMenu = siteService.subscribeToMenuItems((data) => {
+      if (data && data.length > 0) setMenuItems(data);
+    });
+
+    const unsubFooter = siteService.subscribeToFooterConfig((data) => {
+      if (data) setFooterConfig((prev) => ({ ...prev, ...data }));
+    });
+
+    const unsubSiteContent = siteService.subscribeToSiteContent((data) => {
+      if (data) setSiteContent((prev) => ({ ...prev, ...data }));
+    });
+
+    const unsubCustomPages = siteService.subscribeToCustomPages((data) => {
+      if (data && data.length > 0) setCustomPages(data);
+    });
+
     authService.getAdminAccounts().then((accounts) => {
       if (accounts && accounts.length > 0) {
         setAdminAccounts(accounts);
@@ -248,6 +268,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       unsubAnnouncement();
       unsubLabInfo();
       unsubDepartments();
+      unsubMenu();
+      unsubFooter();
+      unsubSiteContent();
+      unsubCustomPages();
     };
   }, []);
 
@@ -255,33 +279,22 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addTest = (newTestData: Omit<TestItem, 'id'>): TestItem => {
     const id = `test-${Date.now()}`;
     const newTest: TestItem = { ...newTestData, id };
-    
-    // Optimistic UI update
     setTests((prev) => [newTest, ...prev]);
-    
-    // Firestore persistence
-    testService.createTest(newTestData, id).catch((err) => {
-      console.error('Error creating test in Firestore:', err);
+    testService.saveTest(newTest).catch((err) => {
+      console.error('Error saving test to Firestore:', err);
     });
-    
     return newTest;
   };
 
-  const updateTest = (id: string, patch: Partial<TestItem>) => {
-    // Optimistic UI update
-    setTests((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
-    
-    // Firestore persistence
-    testService.updateTest(id, patch).catch((err) => {
+  const updateTest = (id: string, updatedFields: Partial<TestItem>) => {
+    setTests((prev) => prev.map((t) => (t.id === id ? { ...t, ...updatedFields } : t)));
+    testService.updateTest(id, updatedFields).catch((err) => {
       console.error('Error updating test in Firestore:', err);
     });
   };
 
   const deleteTest = (id: string) => {
-    // Optimistic UI update
     setTests((prev) => prev.filter((t) => t.id !== id));
-    
-    // Firestore persistence
     testService.deleteTest(id).catch((err) => {
       console.error('Error deleting test from Firestore:', err);
     });
@@ -290,40 +303,29 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const togglePopularTest = (id: string) => {
     const target = tests.find((t) => t.id === id);
     if (!target) return;
-    
-    const nextStatus = !target.isPopular;
-    setTests((prev) => prev.map((t) => (t.id === id ? { ...t, isPopular: nextStatus } : t)));
-    
-    testService.togglePopularTest(id, target.isPopular || false).catch((err) => {
-      console.error('Error toggling popular test status in Firestore:', err);
-    });
+    updateTest(id, { isPopular: !target.isPopular });
   };
 
   // --- PACKAGES CRUD ---
   const addPackage = (newPkgData: Omit<HealthPackage, 'id'>): HealthPackage => {
     const id = `pkg-${Date.now()}`;
     const newPkg: HealthPackage = { ...newPkgData, id };
-    
     setPackages((prev) => [newPkg, ...prev]);
-    
-    packageService.createPackage(newPkgData, id).catch((err) => {
-      console.error('Error creating package in Firestore:', err);
+    packageService.savePackage(newPkg).catch((err) => {
+      console.error('Error saving package to Firestore:', err);
     });
-    
     return newPkg;
   };
 
-  const updatePackage = (id: string, patch: Partial<HealthPackage>) => {
-    setPackages((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
-    
-    packageService.updatePackage(id, patch).catch((err) => {
+  const updatePackage = (id: string, updatedFields: Partial<HealthPackage>) => {
+    setPackages((prev) => prev.map((p) => (p.id === id ? { ...p, ...updatedFields } : p)));
+    packageService.updatePackage(id, updatedFields).catch((err) => {
       console.error('Error updating package in Firestore:', err);
     });
   };
 
   const deletePackage = (id: string) => {
     setPackages((prev) => prev.filter((p) => p.id !== id));
-    
     packageService.deletePackage(id).catch((err) => {
       console.error('Error deleting package from Firestore:', err);
     });
@@ -332,40 +334,29 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const togglePopularPackage = (id: string) => {
     const target = packages.find((p) => p.id === id);
     if (!target) return;
-    
-    const nextStatus = !target.isPopular;
-    setPackages((prev) => prev.map((p) => (p.id === id ? { ...p, isPopular: nextStatus } : p)));
-    
-    packageService.togglePopularPackage(id, target.isPopular || false).catch((err) => {
-      console.error('Error toggling popular package in Firestore:', err);
-    });
+    updatePackage(id, { isPopular: !target.isPopular });
   };
 
   // --- FAQS CRUD ---
   const addFAQ = (newFaqData: Omit<FAQItem, 'id'>): FAQItem => {
     const id = `faq-${Date.now()}`;
     const newFaq: FAQItem = { ...newFaqData, id };
-    
-    setFaqs((prev) => [...prev, newFaq]);
-    
-    faqService.createFAQ(newFaqData, id).catch((err) => {
-      console.error('Error creating FAQ in Firestore:', err);
+    setFaqs((prev) => [newFaq, ...prev]);
+    faqService.saveFAQ(newFaq).catch((err) => {
+      console.error('Error saving FAQ to Firestore:', err);
     });
-    
     return newFaq;
   };
 
-  const updateFAQ = (id: string, patch: Partial<FAQItem>) => {
-    setFaqs((prev) => prev.map((f) => (f.id === id ? { ...f, ...patch } : f)));
-    
-    faqService.updateFAQ(id, patch).catch((err) => {
+  const updateFAQ = (id: string, updatedFields: Partial<FAQItem>) => {
+    setFaqs((prev) => prev.map((f) => (f.id === id ? { ...f, ...updatedFields } : f)));
+    faqService.updateFAQ(id, updatedFields).catch((err) => {
       console.error('Error updating FAQ in Firestore:', err);
     });
   };
 
   const deleteFAQ = (id: string) => {
     setFaqs((prev) => prev.filter((f) => f.id !== id));
-    
     faqService.deleteFAQ(id).catch((err) => {
       console.error('Error deleting FAQ from Firestore:', err);
     });
@@ -373,29 +364,24 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // --- BLOG CRUD ---
   const addBlogPost = (newPostData: Omit<BlogPost, 'id'>): BlogPost => {
-    const id = `post-${Date.now()}`;
+    const id = `blog-${Date.now()}`;
     const newPost: BlogPost = { ...newPostData, id };
-    
     setBlogPosts((prev) => [newPost, ...prev]);
-    
-    blogService.createBlogPost(newPostData, id).catch((err) => {
-      console.error('Error creating blog post in Firestore:', err);
+    blogService.saveBlogPost(newPost).catch((err) => {
+      console.error('Error saving blog post to Firestore:', err);
     });
-    
     return newPost;
   };
 
-  const updateBlogPost = (id: string, patch: Partial<BlogPost>) => {
-    setBlogPosts((prev) => prev.map((b) => (b.id === id ? { ...b, ...patch } : b)));
-    
-    blogService.updateBlogPost(id, patch).catch((err) => {
+  const updateBlogPost = (id: string, updatedFields: Partial<BlogPost>) => {
+    setBlogPosts((prev) => prev.map((b) => (b.id === id ? { ...b, ...updatedFields } : b)));
+    blogService.updateBlogPost(id, updatedFields).catch((err) => {
       console.error('Error updating blog post in Firestore:', err);
     });
   };
 
   const deleteBlogPost = (id: string) => {
     setBlogPosts((prev) => prev.filter((b) => b.id !== id));
-    
     blogService.deleteBlogPost(id).catch((err) => {
       console.error('Error deleting blog post from Firestore:', err);
     });
@@ -403,27 +389,29 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // --- BOOKINGS CRUD ---
   const addBooking = (bookingData: Omit<BookingRequest, 'id' | 'createdAt'>): BookingRequest => {
-    const id = `bk-${Date.now()}`;
+    const randomSuffix = Math.floor(100000 + Math.random() * 900000);
+    const referenceNumber = `MCD-2026-${randomSuffix}`;
     const now = new Date();
-    const createdAt = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const formattedDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+    const id = `bk-${Date.now()}`;
     const newBooking: BookingRequest = {
       ...bookingData,
       id,
-      createdAt
+      referenceNumber,
+      createdAt: formattedDate,
+      status: 'Confirmed'
     };
-    
+
     setBookings((prev) => [newBooking, ...prev]);
-    
-    bookingService.createBooking(bookingData, id).catch((err) => {
+    bookingService.saveBooking(newBooking).catch((err) => {
       console.error('Error saving booking to Firestore:', err);
     });
-    
     return newBooking;
   };
 
   const updateBookingStatus = (id: string, status: BookingRequest['status']) => {
     setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, status } : b)));
-    
     bookingService.updateBookingStatus(id, status).catch((err) => {
       console.error('Error updating booking status in Firestore:', err);
     });
@@ -431,7 +419,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const deleteBooking = (id: string) => {
     setBookings((prev) => prev.filter((b) => b.id !== id));
-    
     bookingService.deleteBooking(id).catch((err) => {
       console.error('Error deleting booking from Firestore:', err);
     });
@@ -439,72 +426,184 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // --- PATIENT REPORTS CRUD ---
   const addPatientReport = (report: PatientReportRecord) => {
-    setPatientReports((prev) => [report, ...prev.filter((r) => r.uhid !== report.uhid)]);
-    
-    reportService.createPatientReport(report).catch((err) => {
+    setPatientReports((prev) => {
+      const exists = prev.some((r) => r.uhid === report.uhid);
+      if (exists) {
+        return prev.map((r) => (r.uhid === report.uhid ? report : r));
+      }
+      return [report, ...prev];
+    });
+    reportService.savePatientReport(report).catch((err) => {
       console.error('Error saving patient report to Firestore:', err);
     });
   };
 
-  const updatePatientReport = (uhid: string, patch: Partial<PatientReportRecord>) => {
-    setPatientReports((prev) => prev.map((r) => (r.uhid === uhid ? { ...r, ...patch } : r)));
-    
-    reportService.updatePatientReport(uhid, patch).catch((err) => {
+  const updatePatientReport = (uhid: string, reportFields: Partial<PatientReportRecord>) => {
+    setPatientReports((prev) => prev.map((r) => (r.uhid === uhid ? { ...r, ...reportFields } : r)));
+    reportService.updatePatientReport(uhid, reportFields).catch((err) => {
       console.error('Error updating patient report in Firestore:', err);
     });
   };
 
   const deletePatientReport = (uhid: string) => {
     setPatientReports((prev) => prev.filter((r) => r.uhid !== uhid));
-    
     reportService.deletePatientReport(uhid).catch((err) => {
       console.error('Error deleting patient report from Firestore:', err);
     });
   };
 
-  // --- LAB INFO & SETTINGS ---
-  const updateLabInfo = (info: Partial<typeof LAB_INFO>) => {
-    setLabInfo((prev) => ({ ...prev, ...info }));
-    siteService.updateLabInfo(info).catch((err) => {
-      console.error('Error updating lab info in Firestore:', err);
+  // --- LAB INFO & BRANDING & CONTACT ---
+  const updateLabInfo = (info: Partial<LabInfo>) => {
+    setLabInfo((prev) => {
+      const updated = { ...prev, ...info };
+      siteService.updateLabInfo(updated).catch((err) => {
+        console.error('Error updating lab info in Firestore:', err);
+      });
+      return updated;
     });
   };
 
-  const updateAnnouncement = (patch: Partial<AnnouncementSettings>) => {
-    setAnnouncement((prev) => ({ ...prev, ...patch }));
-    siteService.updateAnnouncement(patch).catch((err) => {
-      console.error('Error updating announcement in Firestore:', err);
+  const updateAnnouncement = (ann: Partial<AnnouncementSettings>) => {
+    setAnnouncement((prev) => {
+      const updated = { ...prev, ...ann };
+      siteService.updateAnnouncement(updated).catch((err) => {
+        console.error('Error updating announcement in Firestore:', err);
+      });
+      return updated;
     });
   };
 
-  const updateDepartment = (id: string, patch: Partial<DiagnosticDepartment>) => {
-    const updated = departments.map((d) => (d.id === id ? { ...d, ...patch } : d));
-    setDepartments(updated);
-    siteService.updateDepartments(updated).catch((err) => {
-      console.error('Error updating departments in Firestore:', err);
+  const updateDepartment = (id: string, deptFields: Partial<DiagnosticDepartment>) => {
+    setDepartments((prev) => {
+      const updated = prev.map((d) => (d.id === id ? { ...d, ...deptFields } : d));
+      siteService.updateDepartments(updated).catch((err) => {
+        console.error('Error updating departments in Firestore:', err);
+      });
+      return updated;
     });
   };
 
-  // --- SITE IMAGES MANAGEMENT ---
-  const updateSiteImage = (key: keyof SiteImagesConfig, url: string) => {
-    const updated = {
-      ...siteImages,
-      [key]: url.trim()
+  // --- MENU BAR CMS ---
+  const updateMenuItems = (items: MenuItem[]) => {
+    setMenuItems(items);
+    siteService.updateMenuItems(items).catch((err) => {
+      console.error('Error updating menu items in Firestore:', err);
+    });
+  };
+
+  const addMenuItem = (itemData: Omit<MenuItem, 'id'>): MenuItem => {
+    const id = `menu-${Date.now()}`;
+    const newItem: MenuItem = { ...itemData, id };
+    const updated = [...menuItems, newItem];
+    setMenuItems(updated);
+    siteService.updateMenuItems(updated).catch((err) => {
+      console.error('Error saving new menu item to Firestore:', err);
+    });
+    return newItem;
+  };
+
+  const deleteMenuItem = (id: string) => {
+    const updated = menuItems.filter((m) => m.id !== id);
+    setMenuItems(updated);
+    siteService.updateMenuItems(updated).catch((err) => {
+      console.error('Error deleting menu item in Firestore:', err);
+    });
+  };
+
+  const toggleMenuItem = (id: string) => {
+    const updated = menuItems.map((m) => (m.id === id ? { ...m, enabled: !m.enabled } : m));
+    setMenuItems(updated);
+    siteService.updateMenuItems(updated).catch((err) => {
+      console.error('Error toggling menu item in Firestore:', err);
+    });
+  };
+
+  // --- FOOTER CONFIG ---
+  const updateFooterConfig = (footerFields: Partial<FooterConfig>) => {
+    setFooterConfig((prev) => {
+      const updated = { ...prev, ...footerFields };
+      siteService.updateFooterConfig(updated).catch((err) => {
+        console.error('Error updating footer config in Firestore:', err);
+      });
+      return updated;
+    });
+  };
+
+  // --- WEBSITE CMS TEXT CONTENT ---
+  const updateSiteContent = (contentFields: Partial<SiteContentConfig>) => {
+    setSiteContent((prev) => {
+      const updated = { ...prev, ...contentFields };
+      siteService.updateSiteContent(updated).catch((err) => {
+        console.error('Error updating site content in Firestore:', err);
+      });
+      return updated;
+    });
+  };
+
+  const updateSiteContentSection = <K extends keyof SiteContentConfig>(section: K, data: Partial<SiteContentConfig[K]>) => {
+    setSiteContent((prev) => {
+      const updatedSection = { ...prev[section], ...data };
+      const updatedContent = { ...prev, [section]: updatedSection };
+      siteService.updateSiteContent(updatedContent).catch((err) => {
+        console.error(`Error updating site content section ${String(section)}:`, err);
+      });
+      return updatedContent;
+    });
+  };
+
+  // --- CUSTOM PAGES CMS ---
+  const addCustomPage = (pageData: Omit<CustomPageItem, 'id' | 'createdAt' | 'updatedAt'>): CustomPageItem => {
+    const now = new Date().toISOString();
+    const id = `page-${Date.now()}`;
+    const newPage: CustomPageItem = {
+      ...pageData,
+      id,
+      createdAt: now,
+      updatedAt: now
     };
-    setSiteImages(updated);
-    siteService.updateSiteImages({ [key]: url.trim() }).catch((err) => {
-      console.error('Error updating site image in Firestore:', err);
+    const updated = [...customPages, newPage];
+    setCustomPages(updated);
+    siteService.updateCustomPages(updated).catch((err) => {
+      console.error('Error adding custom page to Firestore:', err);
+    });
+    return newPage;
+  };
+
+  const updateCustomPage = (id: string, pageFields: Partial<CustomPageItem>) => {
+    const now = new Date().toISOString();
+    const updated = customPages.map((p) => (p.id === id ? { ...p, ...pageFields, updatedAt: now } : p));
+    setCustomPages(updated);
+    siteService.updateCustomPages(updated).catch((err) => {
+      console.error('Error updating custom page in Firestore:', err);
+    });
+  };
+
+  const deleteCustomPage = (id: string) => {
+    const updated = customPages.filter((p) => p.id !== id);
+    setCustomPages(updated);
+    siteService.updateCustomPages(updated).catch((err) => {
+      console.error('Error deleting custom page in Firestore:', err);
+    });
+  };
+
+  // --- SITE IMAGES & MEDIA ---
+  const updateSiteImage = (key: keyof SiteImagesConfig, url: string) => {
+    setSiteImages((prev) => {
+      const updated = { ...prev, [key]: url };
+      siteService.updateSiteImages(updated).catch((err) => {
+        console.error('Error updating site images in Firestore:', err);
+      });
+      return updated;
     });
   };
 
   const updateAllSiteImages = (images: Partial<SiteImagesConfig>) => {
-    const updated = {
-      ...siteImages,
-      ...images
-    };
-    setSiteImages(updated);
-    siteService.updateSiteImages(images).catch((err) => {
-      console.error('Error updating site images in Firestore:', err);
+    setSiteImages((prev) => {
+      const updated = { ...prev, ...images };
+      siteService.updateSiteImages(updated).catch((err) => {
+        console.error('Error updating multiple site images in Firestore:', err);
+      });
+      return updated;
     });
   };
 
@@ -515,137 +614,162 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  // --- ADMIN AUTHENTICATION & ACCESS CONTROL ---
-  const loginAdmin = async (
-    username: string, 
-    password: string, 
-    rememberMe = true
-  ): Promise<{ success: boolean; message?: string }> => {
-    const result = await authService.loginAdminUser(username, password);
+  // --- ADMIN AUTHENTICATION ---
+  const loginAdmin = async (username: string, pass: string, rememberMe = true) => {
+    const result = await authService.authenticateAdmin(username, pass);
     if (result.success && result.user) {
       setAdminUser(result.user);
-      try {
-        if (rememberMe) {
-          localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(result.user));
-        } else {
-          sessionStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(result.user));
-        }
-      } catch (e) {
-        console.error('Failed to store admin session', e);
+      const sessionData = JSON.stringify(result.user);
+      if (rememberMe) {
+        localStorage.setItem(ADMIN_SESSION_KEY, sessionData);
+      } else {
+        sessionStorage.setItem(ADMIN_SESSION_KEY, sessionData);
       }
-      return { success: true };
     }
-    return { success: false, message: result.message };
+    return result;
   };
 
   const logoutAdmin = () => {
     setAdminUser(null);
-    authService.logoutAdminUser().catch(() => {});
-    try {
-      localStorage.removeItem(ADMIN_SESSION_KEY);
-      sessionStorage.removeItem(ADMIN_SESSION_KEY);
-    } catch (e) {
-      console.error('Failed to clear admin session', e);
-    }
+    localStorage.removeItem(ADMIN_SESSION_KEY);
+    sessionStorage.removeItem(ADMIN_SESSION_KEY);
   };
 
-  const changeAdminPassword = async (
-    username: string, 
-    currentPass: string, 
-    newPass: string
-  ): Promise<{ success: boolean; message: string }> => {
-    const res = await authService.updateAdminUserPassword(username, currentPass, newPass);
-    if (res.success) {
-      const refreshedAccounts = await authService.getAdminAccounts();
-      setAdminAccounts(refreshedAccounts);
+  const changeAdminPassword = async (username: string, currentPass: string, newPass: string) => {
+    const result = await authService.updateAdminPassword(username, currentPass, newPass);
+    if (result.success) {
+      const accounts = await authService.getAdminAccounts();
+      setAdminAccounts(accounts);
     }
-    return res;
+    return result;
   };
 
   const updateAdminAccounts = (accounts: AdminCredential[]) => {
     setAdminAccounts(accounts);
-    authService.syncAdminAccounts(accounts).catch(() => {});
+    authService.syncAdminAccounts(accounts).catch((err) => {
+      console.error('Error updating admin accounts in Firestore:', err);
+    });
   };
 
-  // --- SYSTEM UTILITIES ---
-  const seedDatabase = async (force: boolean = false) => {
-    await seedInitialFirestoreData(force);
-  };
-
+  // --- SYSTEM & SEEDING ---
   const resetToDefaults = async () => {
-    await seedInitialFirestoreData(true);
-    setTests(POPULAR_TESTS);
-    setPackages(HEALTH_PACKAGES);
-    setFaqs(FAQS);
-    setBlogPosts(BLOG_POSTS);
-    setPatientReports(SAMPLE_PATIENT_REPORTS);
-    setLabInfo(LAB_INFO);
-    setDepartments(DIAGNOSTIC_DEPARTMENTS);
-    setAnnouncement(INITIAL_ANNOUNCEMENT);
-    setSiteImages(DEFAULT_SITE_IMAGES);
-    setAdminAccounts(authService.DEFAULT_ADMIN_ACCOUNTS);
+    setIsFirebaseLoading(true);
+    try {
+      await seedInitialFirestoreData(true);
+      setTests(POPULAR_TESTS);
+      setPackages(HEALTH_PACKAGES);
+      setFaqs(FAQS);
+      setBlogPosts(BLOG_POSTS);
+      setPatientReports(SAMPLE_PATIENT_REPORTS);
+      setLabInfo(LAB_INFO);
+      setDepartments(DIAGNOSTIC_DEPARTMENTS);
+      setAnnouncement(INITIAL_ANNOUNCEMENT);
+      setSiteImages(DEFAULT_SITE_IMAGES);
+      setMenuItems(DEFAULT_MENU_ITEMS);
+      setFooterConfig(DEFAULT_FOOTER_CONFIG);
+      setSiteContent(DEFAULT_SITE_CONTENT);
+      setCustomPages(DEFAULT_CUSTOM_PAGES);
+    } finally {
+      setIsFirebaseLoading(false);
+    }
   };
 
-  const exportDataJSON = () => {
-    const fullStore = {
+  const exportDataJSON = (): string => {
+    const exportObject = {
+      exportedAt: new Date().toISOString(),
+      appVersion: '2.0.0',
       tests,
       packages,
       faqs,
       blogPosts,
-      bookings,
       patientReports,
       labInfo,
       departments,
       announcement,
-      siteImages
+      siteImages,
+      menuItems,
+      footerConfig,
+      siteContent,
+      customPages
     };
-    return JSON.stringify(fullStore, null, 2);
+    return JSON.stringify(exportObject, null, 2);
   };
 
   const importDataJSON = async (jsonString: string): Promise<boolean> => {
     try {
-      const parsed = JSON.parse(jsonString);
-      if (parsed && typeof parsed === 'object') {
-        if (Array.isArray(parsed.tests)) {
-          for (const t of parsed.tests) {
-            await testService.createTest(t, t.id);
-          }
-        }
-        if (Array.isArray(parsed.packages)) {
-          for (const p of parsed.packages) {
-            await packageService.createPackage(p, p.id);
-          }
-        }
-        if (Array.isArray(parsed.faqs)) {
-          for (const f of parsed.faqs) {
-            await faqService.createFAQ(f, f.id);
-          }
-        }
-        if (Array.isArray(parsed.blogPosts)) {
-          for (const b of parsed.blogPosts) {
-            await blogService.createBlogPost(b, b.id);
-          }
-        }
-        if (Array.isArray(parsed.patientReports)) {
-          for (const r of parsed.patientReports) {
-            await reportService.createPatientReport(r);
-          }
-        }
-        if (parsed.siteImages) {
-          await siteService.updateSiteImages(parsed.siteImages);
-        }
-        if (parsed.announcement) {
-          await siteService.updateAnnouncement(parsed.announcement);
-        }
-        if (parsed.labInfo) {
-          await siteService.updateLabInfo(parsed.labInfo);
-        }
-        return true;
+      const data = JSON.parse(jsonString);
+      if (!data || typeof data !== 'object') return false;
+
+      setIsFirebaseLoading(true);
+
+      if (Array.isArray(data.tests)) {
+        setTests(data.tests);
+        for (const t of data.tests) await testService.saveTest(t);
       }
+      if (Array.isArray(data.packages)) {
+        setPackages(data.packages);
+        for (const p of data.packages) await packageService.savePackage(p);
+      }
+      if (Array.isArray(data.faqs)) {
+        setFaqs(data.faqs);
+        for (const f of data.faqs) await faqService.saveFAQ(f);
+      }
+      if (Array.isArray(data.blogPosts)) {
+        setBlogPosts(data.blogPosts);
+        for (const b of data.blogPosts) await blogService.saveBlogPost(b);
+      }
+      if (Array.isArray(data.patientReports)) {
+        setPatientReports(data.patientReports);
+        for (const r of data.patientReports) await reportService.savePatientReport(r);
+      }
+      if (data.labInfo) {
+        setLabInfo(data.labInfo);
+        await siteService.updateLabInfo(data.labInfo);
+      }
+      if (Array.isArray(data.departments)) {
+        setDepartments(data.departments);
+        await siteService.updateDepartments(data.departments);
+      }
+      if (data.announcement) {
+        setAnnouncement(data.announcement);
+        await siteService.updateAnnouncement(data.announcement);
+      }
+      if (data.siteImages) {
+        setSiteImages(data.siteImages);
+        await siteService.updateSiteImages(data.siteImages);
+      }
+      if (Array.isArray(data.menuItems)) {
+        setMenuItems(data.menuItems);
+        await siteService.updateMenuItems(data.menuItems);
+      }
+      if (data.footerConfig) {
+        setFooterConfig(data.footerConfig);
+        await siteService.updateFooterConfig(data.footerConfig);
+      }
+      if (data.siteContent) {
+        setSiteContent(data.siteContent);
+        await siteService.updateSiteContent(data.siteContent);
+      }
+      if (Array.isArray(data.customPages)) {
+        setCustomPages(data.customPages);
+        await siteService.updateCustomPages(data.customPages);
+      }
+
+      return true;
+    } catch (err) {
+      console.error('Error importing backup JSON:', err);
       return false;
-    } catch (e) {
-      console.error('Import data failed', e);
-      return false;
+    } finally {
+      setIsFirebaseLoading(false);
+    }
+  };
+
+  const seedDatabase = async (force: boolean = false) => {
+    setIsFirebaseLoading(true);
+    try {
+      await seedInitialFirestoreData(force);
+    } finally {
+      setIsFirebaseLoading(false);
     }
   };
 
@@ -662,50 +786,68 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         departments,
         announcement,
         siteImages,
+        menuItems,
+        footerConfig,
+        siteContent,
+        customPages,
         isFirebaseLoading,
-        // Tests
+
         addTest,
         updateTest,
         deleteTest,
         togglePopularTest,
-        // Packages
+
         addPackage,
         updatePackage,
         deletePackage,
         togglePopularPackage,
-        // FAQs
+
         addFAQ,
         updateFAQ,
         deleteFAQ,
-        // Blog
+
         addBlogPost,
         updateBlogPost,
         deleteBlogPost,
-        // Bookings
+
         addBooking,
         updateBookingStatus,
         deleteBooking,
-        // Reports
+
         addPatientReport,
         updatePatientReport,
         deletePatientReport,
-        // Lab Info & Settings
+
         updateLabInfo,
         updateAnnouncement,
         updateDepartment,
-        // Site Images
+
+        updateMenuItems,
+        addMenuItem,
+        deleteMenuItem,
+        toggleMenuItem,
+
+        updateFooterConfig,
+
+        updateSiteContent,
+        updateSiteContentSection,
+
+        addCustomPage,
+        updateCustomPage,
+        deleteCustomPage,
+
         updateSiteImage,
         updateAllSiteImages,
         resetSiteImages,
-        // Admin Authentication
+
         adminUser,
-        isAdminAuthenticated: Boolean(adminUser),
+        isAdminAuthenticated: !!adminUser,
         adminAccounts,
         loginAdmin,
         logoutAdmin,
         changeAdminPassword,
         updateAdminAccounts,
-        // System
+
         resetToDefaults,
         exportDataJSON,
         importDataJSON,

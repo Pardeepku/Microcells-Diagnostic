@@ -20,8 +20,7 @@ import {
   ExternalLink,
   Database
 } from 'lucide-react';
-import { PageType, CartItem } from '../types';
-import { LAB_INFO } from '../data/labData';
+import { PageType, CartItem, MenuItem } from '../types';
 import { AnnouncementBar } from './AnnouncementBar';
 import { useData } from '../context/DataContext';
 
@@ -44,7 +43,15 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenPrescription,
   onOpenWhatsApp
 }) => {
-  const { isAdminAuthenticated, adminUser, logoutAdmin, siteImages } = useData();
+  const { 
+    isAdminAuthenticated, 
+    adminUser, 
+    logoutAdmin, 
+    siteImages, 
+    labInfo, 
+    menuItems 
+  } = useData();
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -60,18 +67,6 @@ export const Header: React.FC<HeaderProps> = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navItems: { label: string; page: PageType }[] = [
-    { label: 'Home', page: 'home' },
-    { label: 'About Us', page: 'about' },
-    { label: 'Services', page: 'services' },
-    { label: 'Packages', page: 'packages' },
-    { label: 'All Tests', page: 'tests' },
-    { label: 'Home Collection', page: 'home-collection' },
-    { label: 'Why Us', page: 'why-choose-us' },
-    { label: 'Blog', page: 'blog' },
-    { label: 'Contact', page: 'contact' },
-  ];
-
   const handleAdminAuthAction = () => {
     if (isAdminAuthenticated) {
       logoutAdmin();
@@ -82,6 +77,37 @@ export const Header: React.FC<HeaderProps> = ({
       onNavigate('admin-login');
     }
   };
+
+  const handleMenuClick = (item: MenuItem) => {
+    setMobileMenuOpen(false);
+    if (item.isExternal && item.externalUrl) {
+      window.open(item.externalUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    if (item.page === 'custom-page' && item.customSlug) {
+      onNavigate('custom-page', item.customSlug);
+      return;
+    }
+    onNavigate(item.page, item.customSlug);
+  };
+
+  // Filter only enabled menu items sorted by order
+  const activeNavItems = (menuItems && menuItems.length > 0)
+    ? menuItems.filter(m => m.enabled).sort((a, b) => a.order - b.order)
+    : [
+        { id: '1', label: 'Home', page: 'home' as PageType, enabled: true, order: 1 },
+        { id: '2', label: 'About Us', page: 'about' as PageType, enabled: true, order: 2 },
+        { id: '3', label: 'Services', page: 'services' as PageType, enabled: true, order: 3 },
+        { id: '4', label: 'Packages', page: 'packages' as PageType, enabled: true, order: 4, highlight: true },
+        { id: '5', label: 'All Tests', page: 'tests' as PageType, enabled: true, order: 5 },
+        { id: '6', label: 'Home Collection', page: 'home-collection' as PageType, enabled: true, order: 6 },
+        { id: '7', label: 'Why Us', page: 'why-choose-us' as PageType, enabled: true, order: 7 },
+        { id: '8', label: 'Blog', page: 'blog' as PageType, enabled: true, order: 8 },
+        { id: '9', label: 'Contact', page: 'contact' as PageType, enabled: true, order: 9 }
+      ];
+
+  const logoSrc = labInfo?.brandLogoUrl || siteImages?.brandLogoUrl;
+  const whatsappNumberClean = (labInfo?.whatsappNumber || '+919876543210').replace(/[^0-9]/g, '');
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white shadow-sm transition-all duration-200">
@@ -95,25 +121,25 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Left contact & hours items */}
           <div className="flex flex-wrap items-center gap-3.5 sm:gap-5">
             <a 
-              href={`tel:${LAB_INFO.phone.replace(/[^0-9+]/g, '')}`} 
+              href={`tel:${(labInfo?.phone || '+91 98765 43210').replace(/[^0-9+]/g, '')}`} 
               className="inline-flex items-center gap-1.5 hover:text-teal-400 transition-colors"
               title="Call Central Helpline"
             >
               <Phone className="w-3.5 h-3.5 text-teal-400 shrink-0" />
-              <span>Call: <strong className="text-white font-semibold">{LAB_INFO.phone}</strong></span>
+              <span>Call: <strong className="text-white font-semibold">{labInfo?.phone || '+91 98765 43210'}</strong></span>
             </a>
 
             <button 
               onClick={onOpenWhatsApp}
-              className="inline-flex items-center gap-1.5 hover:text-emerald-400 transition-colors text-slate-200"
+              className="inline-flex items-center gap-1.5 hover:text-emerald-400 transition-colors text-slate-200 cursor-pointer"
             >
               <MessageSquare className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              <span>WhatsApp: <strong className="text-white font-semibold">{LAB_INFO.whatsappDisplay}</strong></span>
+              <span>WhatsApp: <strong className="text-white font-semibold">{labInfo?.whatsappDisplay || '+91 98765 43210'}</strong></span>
             </button>
 
             <div className="hidden lg:flex items-center gap-1.5 text-slate-400">
               <Clock className="w-3.5 h-3.5 text-teal-400 shrink-0" />
-              <span>Hours: <span className="text-slate-200">{LAB_INFO.timings}</span></span>
+              <span>Hours: <span className="text-slate-200">{labInfo?.timings || 'Mon - Sat: 7:00 AM – 9:00 PM'}</span></span>
             </div>
           </div>
 
@@ -122,7 +148,7 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Download Report */}
             <button
               onClick={() => onNavigate('reports')}
-              className="hidden sm:inline-flex items-center gap-1 text-slate-200 hover:text-teal-300 font-semibold transition-colors text-xs"
+              className="hidden sm:inline-flex items-center gap-1 text-slate-200 hover:text-teal-300 font-semibold transition-colors text-xs cursor-pointer"
               id="topbar-btn-reports"
             >
               <FileText className="w-3.5 h-3.5 text-teal-400" />
@@ -150,7 +176,7 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => onNavigate('admin')}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 border border-teal-500/40 text-xs font-bold transition-all"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 border border-teal-500/40 text-xs font-bold transition-all cursor-pointer"
                   title="Go to Admin Dashboard"
                   id="topbar-btn-admin-panel"
                 >
@@ -198,16 +224,16 @@ export const Header: React.FC<HeaderProps> = ({
             className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group select-none shrink-0"
             id="nav-brand-logo"
           >
-            {siteImages?.brandLogoUrl ? (
+            {logoSrc ? (
               <img 
-                src={siteImages.brandLogoUrl} 
-                alt="Microcells Diagnostics Logo" 
-                className="h-10 sm:h-11 w-auto max-w-[140px] object-contain rounded-lg"
+                src={logoSrc} 
+                alt={`${labInfo?.tradeName || 'Microcells'} Logo`} 
+                className="h-10 sm:h-11 w-auto max-w-[150px] object-contain rounded-lg"
                 referrerPolicy="no-referrer"
               />
             ) : (
               /* Custom Modern Laboratory Icon */
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-blue-900 via-blue-800 to-teal-700 flex items-center justify-center text-white shadow-md group-hover:shadow-teal-500/20 transition-all shrink-0">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-linear-to-br from-blue-900 via-blue-800 to-teal-700 flex items-center justify-center text-white shadow-md group-hover:shadow-teal-500/20 transition-all shrink-0">
                 <div className="relative flex items-center justify-center">
                   <svg className="w-6 h-6 text-teal-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="10" stroke="#0ea5e9" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.6"/>
@@ -221,102 +247,90 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5 leading-tight">
                 <span className="text-lg sm:text-xl font-extrabold tracking-tight text-blue-950 font-display">
-                  MICRO<span className="text-teal-600">CELLS</span>
+                  {labInfo?.tradeName || 'MICROCELLS'}
                 </span>
                 <span className="hidden sm:inline-block px-1.5 py-0.2 text-[9px] uppercase font-bold tracking-wider bg-blue-100 text-blue-800 rounded">
                   Pvt. Ltd.
                 </span>
               </div>
               <span className="text-[10px] sm:text-[11px] font-medium tracking-wide text-slate-500 uppercase leading-none mt-0.5">
-                Diagnostics & Pathology Lab
+                {labInfo?.tagline || 'Diagnostics & Pathology Lab'}
               </span>
             </div>
           </div>
 
-          {/* Desktop Navigation Links - Perfectly Aligned */}
+          {/* Desktop Navigation Links - Dynamically Rendered from CMS */}
           <nav className="hidden xl:flex items-center justify-center gap-1 flex-1 px-2">
-            {navItems.map((item) => {
+            {activeNavItems.map((item) => {
               const isActive = currentPage === item.page;
               return (
                 <button
-                  key={item.page}
-                  onClick={() => onNavigate(item.page)}
+                  key={item.id}
+                  onClick={() => handleMenuClick(item)}
                   className={`inline-flex items-center justify-center h-9 px-2.5 lg:px-3 rounded-lg text-[13px] font-semibold tracking-tight leading-none whitespace-nowrap transition-all duration-150 cursor-pointer ${
-                    isActive 
-                      ? 'text-blue-800 font-bold bg-blue-50/90 shadow-2xs' 
-                      : 'text-slate-600 hover:text-blue-900 hover:bg-slate-100/80'
+                    item.highlight 
+                      ? 'bg-teal-500/15 text-teal-800 font-bold border border-teal-500/30 shadow-2xs hover:bg-teal-500/25'
+                      : isActive 
+                        ? 'text-blue-800 font-bold bg-blue-50/90 shadow-2xs' 
+                        : 'text-slate-600 hover:text-blue-900 hover:bg-slate-100/80'
                   }`}
                 >
-                  {item.label}
+                  <span>{item.label}</span>
+                  {item.isExternal && <ExternalLink className="w-3 h-3 ml-1 text-slate-400" />}
                 </button>
               );
             })}
           </nav>
 
-          {/* Action CTAs - Uniform Alignment & Baseline */}
+          {/* Action CTAs */}
           <div className="hidden sm:flex items-center gap-2 shrink-0">
-            {/* LIS Shortcut in Main Header */}
-            <a
-              href="https://emidas.co.in:8890/pages/Login.aspx"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="h-9 px-3 rounded-xl border border-sky-300 bg-sky-50 hover:bg-sky-100 text-sky-900 font-bold text-xs inline-flex items-center gap-1.5 transition-all shadow-2xs whitespace-nowrap"
-              title="Access Online LIS Portal (EMIDAS)"
-              id="header-btn-lis-main"
-            >
-              <Database className="w-3.5 h-3.5 text-sky-700" />
-              <span>LIS</span>
-              <ExternalLink className="w-3 h-3 text-sky-600" />
-            </a>
-
-            {/* Quick Prescription Upload Button */}
+            {/* Upload Rx Prescription Button */}
             <button
               onClick={onOpenPrescription}
-              className="h-9 px-3 rounded-xl border border-slate-200 text-slate-700 hover:text-blue-700 hover:bg-blue-50/70 hover:border-blue-200 transition-all text-xs font-semibold inline-flex items-center gap-1.5 shadow-2xs whitespace-nowrap cursor-pointer"
+              className="inline-flex items-center justify-center h-9 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all duration-150 cursor-pointer border border-slate-200/80"
               title="Upload Doctor Prescription"
-              id="header-btn-upload-rx"
+              id="nav-btn-prescription"
             >
-              <UploadCloud className="w-3.5 h-3.5 text-blue-600" />
-              <span className="hidden 2xl:inline">Upload Rx</span>
-              <span className="2xl:hidden">Rx</span>
+              <UploadCloud className="w-4 h-4 mr-1.5 text-teal-600 shrink-0" />
+              <span>Upload Rx</span>
             </button>
 
-            {/* Cart / Selected Tests Drawer Trigger */}
+            {/* Book Test / Home Collection CTA Button */}
+            <button
+              onClick={() => onOpenBooking()}
+              className="inline-flex items-center justify-center h-9 px-3.5 rounded-xl bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-500 hover:to-teal-400 text-white text-xs font-bold tracking-tight transition-all duration-150 shadow-sm shadow-teal-700/20 active:scale-98 cursor-pointer"
+              id="nav-btn-book-test"
+            >
+              <Calendar className="w-3.5 h-3.5 mr-1.5 text-teal-100 shrink-0" />
+              <span>Book a Test</span>
+            </button>
+
+            {/* Cart Button */}
             <button
               onClick={onOpenCart}
-              className="relative h-9 w-9 rounded-xl border border-slate-200 text-slate-700 hover:text-teal-700 hover:bg-teal-50/70 hover:border-teal-200 transition-all inline-flex items-center justify-center shadow-2xs cursor-pointer"
-              title="View Selected Tests"
-              id="header-btn-cart"
+              className="relative inline-flex items-center justify-center h-9 w-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all duration-150 cursor-pointer border border-slate-200/80"
+              aria-label="View Selected Tests Cart"
+              id="nav-btn-cart"
             >
-              <ShoppingBag className="w-4 h-4 text-teal-600" />
+              <ShoppingBag className="w-4 h-4 text-slate-700 shrink-0" />
               {cart.length > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 min-w-4.5 h-4.5 px-1 bg-teal-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-xs">
+                <span className="absolute -top-1.5 -right-1.5 bg-rose-600 text-white text-[10px] font-extrabold w-5 h-5 rounded-full flex items-center justify-center ring-2 ring-white shadow-xs">
                   {cart.length}
                 </span>
               )}
             </button>
-
-            {/* Book a Test CTA */}
-            <button
-              onClick={() => onOpenBooking()}
-              className="h-9 px-3.5 sm:px-4 rounded-xl bg-gradient-to-r from-blue-900 to-blue-800 hover:from-blue-800 hover:to-blue-700 text-white font-bold text-xs shadow-sm shadow-blue-950/20 transition-all inline-flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
-              id="header-btn-book-test"
-            >
-              <Calendar className="w-3.5 h-3.5 text-teal-300" />
-              <span>Book Test</span>
-            </button>
           </div>
 
-          {/* Mobile Menu & Cart Controls */}
-          <div className="flex xl:hidden items-center gap-2">
+          {/* Mobile Hamburger Toggle Button */}
+          <div className="flex items-center gap-2 xl:hidden">
             <button
               onClick={onOpenCart}
-              className="relative p-2 rounded-xl border border-slate-200 text-slate-700"
-              title="Cart"
+              className="relative p-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+              aria-label="Cart"
             >
-              <ShoppingBag className="w-5 h-5 text-teal-600" />
+              <ShoppingBag className="w-5 h-5" />
               {cart.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-teal-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                   {cart.length}
                 </span>
               )}
@@ -324,154 +338,86 @@ export const Header: React.FC<HeaderProps> = ({
 
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-xl text-slate-700 hover:bg-slate-100 focus:outline-none cursor-pointer"
+              className="p-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
               aria-label="Toggle navigation menu"
-              id="header-btn-mobile-menu"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
+
         </div>
       </div>
 
-      {/* Mobile Navigation Drawer */}
+      {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="xl:hidden bg-white border-b border-slate-200 shadow-xl px-4 pt-2 pb-6 animate-in slide-in-from-top-2 duration-200">
-          
-          {/* Quick LIS & Admin Bar for Mobile */}
-          <div className="grid grid-cols-2 gap-2 mb-3 pb-3 border-b border-slate-100">
-            <a
-              href="https://emidas.co.in:8890/pages/Login.aspx"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="py-2.5 px-3 rounded-xl bg-sky-50 border border-sky-200 text-sky-900 font-bold text-xs flex items-center justify-center gap-1.5"
-            >
-              <Database className="w-3.5 h-3.5 text-sky-700" />
-              <span>LIS Portal</span>
-              <ExternalLink className="w-3 h-3 text-sky-600" />
-            </a>
-
-            {isAdminAuthenticated ? (
+        <div className="xl:hidden bg-white border-b border-slate-200 shadow-xl animate-in slide-in-from-top-2 duration-150">
+          <div className="max-w-7xl mx-auto px-4 py-4 space-y-2">
+            
+            <div className="grid grid-cols-2 gap-2 pb-3 border-b border-slate-100">
               <button
-                onClick={() => {
-                  logoutAdmin();
-                  setMobileMenuOpen(false);
-                }}
-                className="py-2.5 px-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 font-bold text-xs flex items-center justify-center gap-1.5"
+                onClick={() => { setMobileMenuOpen(false); onOpenPrescription(); }}
+                className="py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center justify-center gap-1.5"
               >
-                <LogOut className="w-3.5 h-3.5 text-rose-600" />
-                <span>Admin Logout</span>
+                <UploadCloud className="w-4 h-4 text-teal-600" />
+                <span>Upload Rx</span>
               </button>
-            ) : (
-              <button
-                onClick={() => {
-                  onNavigate('admin-login');
-                  setMobileMenuOpen(false);
-                }}
-                className="py-2.5 px-3 rounded-xl bg-teal-50 border border-teal-200 text-teal-800 font-bold text-xs flex items-center justify-center gap-1.5"
-              >
-                <Lock className="w-3.5 h-3.5 text-teal-700" />
-                <span>Admin Login</span>
-              </button>
-            )}
-          </div>
 
-          {/* Navigation Items */}
-          <div className="flex flex-col space-y-1 mb-4">
-            {navItems.map((item) => {
-              const isActive = currentPage === item.page;
-              return (
+              <button
+                onClick={() => { setMobileMenuOpen(false); onOpenBooking(); }}
+                className="py-2.5 px-3 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm"
+              >
+                <Calendar className="w-4 h-4" />
+                <span>Book Test</span>
+              </button>
+            </div>
+
+            {/* Dynamic Menu Links in Mobile */}
+            <div className="space-y-1 py-1">
+              {activeNavItems.map((item) => (
                 <button
-                  key={item.page}
-                  onClick={() => {
-                    onNavigate(item.page);
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-lg text-left text-sm font-medium transition-colors ${
-                    isActive 
-                      ? 'bg-blue-50 text-blue-800 font-bold' 
+                  key={item.id}
+                  onClick={() => handleMenuClick(item)}
+                  className={`w-full text-left py-2.5 px-3 rounded-xl text-sm font-semibold flex items-center justify-between ${
+                    currentPage === item.page
+                      ? 'bg-blue-50 text-blue-900 font-bold'
                       : 'text-slate-700 hover:bg-slate-50'
                   }`}
                 >
                   <span>{item.label}</span>
+                  {item.highlight && (
+                    <span className="px-2 py-0.5 bg-teal-100 text-teal-800 text-[10px] font-bold rounded-md">
+                      Special
+                    </span>
+                  )}
+                  {item.isExternal && <ExternalLink className="w-3.5 h-3.5 text-slate-400" />}
                 </button>
-              );
-            })}
-          </div>
+              ))}
+            </div>
 
-          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
-            <button
-              onClick={() => {
-                onOpenPrescription();
-                setMobileMenuOpen(false);
-              }}
-              className="w-full py-2.5 px-3 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5"
-            >
-              <UploadCloud className="w-3.5 h-3.5 text-blue-600" />
-              <span>Upload Rx</span>
-            </button>
-
-            <button
-              onClick={() => {
-                onNavigate('reports');
-                setMobileMenuOpen(false);
-              }}
-              className="w-full py-2.5 px-3 border border-teal-200 bg-teal-50 rounded-xl text-xs font-semibold text-teal-800 flex items-center justify-center gap-1.5"
-            >
-              <FileText className="w-3.5 h-3.5 text-teal-700" />
-              <span>Download Report</span>
-            </button>
-          </div>
-
-          <div className="flex flex-col gap-2 mt-3">
-            <button
-              onClick={() => {
-                onNavigate('home-collection');
-                setMobileMenuOpen(false);
-              }}
-              className="w-full py-2.5 rounded-xl bg-teal-700 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-xs"
-            >
-              <HomeIcon className="w-4 h-4" />
-              <span>Book Home Collection</span>
-            </button>
-
-            <button
-              onClick={() => {
-                onOpenBooking();
-                setMobileMenuOpen(false);
-              }}
-              className="w-full py-2.5 rounded-xl bg-blue-900 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-xs"
-            >
-              <Calendar className="w-4 h-4 text-teal-300" />
-              <span>Book a Test Appointment</span>
-            </button>
-
-            {isAdminAuthenticated && (
+            <div className="pt-3 border-t border-slate-100 space-y-2">
               <button
-                onClick={() => {
-                  onNavigate('admin');
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full py-2.5 rounded-xl bg-slate-900 text-teal-300 font-semibold text-xs flex items-center justify-center gap-2 border border-teal-500/30"
+                onClick={() => { setMobileMenuOpen(false); onNavigate('reports'); }}
+                className="w-full py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center justify-center gap-2"
               >
-                <LayoutDashboard className="w-4 h-4 text-teal-400" />
-                <span>Admin & CMS Dashboard</span>
+                <FileText className="w-4 h-4 text-teal-600" />
+                <span>Download Patient Report (UHID)</span>
               </button>
-            )}
-          </div>
+              
+              <a
+                href="https://emidas.co.in:8890/pages/Login.aspx"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-2.5 px-3 rounded-xl bg-sky-50 text-sky-700 border border-sky-200 text-xs font-bold flex items-center justify-center gap-2"
+              >
+                <Database className="w-4 h-4 text-sky-600" />
+                <span>Open Online LIS Portal (EMIDAS)</span>
+              </a>
+            </div>
 
-          <div className="mt-4 pt-3 border-t border-slate-100 text-xs text-slate-500 space-y-1.5">
-            <div className="flex items-center gap-2">
-              <Phone className="w-3.5 h-3.5 text-teal-600" />
-              <span>Helpline: {LAB_INFO.phone}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="w-3.5 h-3.5 text-teal-600" />
-              <span>Hours: {LAB_INFO.timings}</span>
-            </div>
           </div>
         </div>
       )}
+
     </header>
   );
 };

@@ -88,3 +88,6 @@ export const deletePatientReport = async (uhid: string): Promise<void> => {
   const docRef = doc(db, COLLECTION_NAME, uhid);
   await deleteDoc(docRef);
 };
+
+export const savePatientReport = createPatientReport;
+

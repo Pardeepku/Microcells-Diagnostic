@@ -100,3 +100,11 @@ export const togglePopularTest = async (
     updatedAt: serverTimestamp()
   });
 };
+
+export const saveTest = async (test: TestItem): Promise<void> => {
+  const docRef = doc(db, COLLECTION_NAME, test.id);
+  await setDoc(docRef, {
+    ...test,
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+};

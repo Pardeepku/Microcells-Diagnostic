@@ -78,3 +78,12 @@ export const deleteFAQ = async (id: string): Promise<void> => {
   const docRef = doc(db, COLLECTION_NAME, id);
   await deleteDoc(docRef);
 };
+
+export const saveFAQ = async (faq: FAQItem): Promise<void> => {
+  const docRef = doc(db, COLLECTION_NAME, faq.id);
+  await setDoc(docRef, {
+    ...faq,
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+};
+
