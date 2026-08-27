@@ -51,7 +51,58 @@ export type AdminTab =
   | 'pages'
   | 'menu'
   | 'branding'
+  | 'ai-agent'
   | 'settings';
+
+export interface AISuggestedTest {
+  id: string;
+  name: string;
+  code?: string;
+  price: number;
+  sampleType?: string;
+  fastingRequired?: boolean;
+  type?: 'test' | 'package';
+}
+
+export interface AIChatMessage {
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: string;
+  suggestedTests?: AISuggestedTest[];
+  source?: 'gemini' | 'openai' | 'pathology_engine';
+  isError?: boolean;
+  isMedicalOrDrugAdvised?: boolean;
+  isOffTopicBlocked?: boolean;
+  guardrailNotice?: string;
+  showContactCard?: boolean;
+  contactDeskInfo?: {
+    phone: string;
+    whatsapp: string;
+    email: string;
+    emergency: string;
+  };
+}
+
+export interface AIAgentConfig {
+  enabled: boolean;
+  agentName: string;
+  welcomeMessage: string;
+  provider: 'auto' | 'gemini' | 'chatgpt';
+  persona: 'pathologist' | 'counselor' | 'concierge';
+  allowVoice: boolean;
+  enableFloatingButton: boolean;
+  suggestedPrompts: string[];
+  customOpenAiKey?: string;
+  customGeminiKey?: string;
+  additionalInstructions?: string;
+  strictWebsiteOnlyGuardrail?: boolean;
+  flagDoctorMedicineAdvice?: boolean;
+  contactDeskPhone?: string;
+  contactDeskWhatsapp?: string;
+  contactDeskEmail?: string;
+  contactDeskEmergency?: string;
+}
 
 export interface SiteImagesConfig {
   homeHeroBanner: string;

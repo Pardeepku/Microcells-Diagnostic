@@ -22,7 +22,8 @@ import {
   Layers,
   Edit3,
   Menu,
-  ChevronRight
+  ChevronRight,
+  Bot
 } from 'lucide-react';
 import { PageType, AdminTab, PatientReportRecord } from '../types';
 import { useData } from '../context/DataContext';
@@ -39,6 +40,7 @@ import { AdminMenuTab } from './admin/AdminMenuTab';
 import { AdminContentCmsTab } from './admin/AdminContentCmsTab';
 import { AdminPagesTab } from './admin/AdminPagesTab';
 import { AdminSettingsTab } from './admin/AdminSettingsTab';
+import { AIAgentSettingsTab } from './admin/AIAgentSettingsTab';
 import { ReportViewerModal } from '../components/ReportViewerModal';
 import { ChangePasswordModal } from '../components/ChangePasswordModal';
 import { AdminLoginView } from './AdminLoginView';
@@ -103,6 +105,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     { id: 'images', label: 'Site Images', icon: ImageIcon, group: 'Website CMS' },
     { id: 'tests', label: 'Tests Catalog', icon: FlaskConical, count: tests.length, group: 'Diagnostics' },
     { id: 'packages', label: 'Health Packages', icon: Package, count: packages.length, group: 'Diagnostics' },
+    { id: 'ai-agent', label: 'AI Diagnostic Agent', icon: Bot, highlight: true, group: 'Diagnostics' },
     { id: 'bookings', label: 'Appointments', icon: CalendarCheck, count: bookings.length, group: 'Operations' },
     { id: 'reports', label: 'Reports', icon: FileText, count: patientReports.length, group: 'Operations' },
     { id: 'blog', label: 'Blog Posts', icon: BookOpen, count: blogPosts.length, group: 'Content' },
@@ -388,6 +391,10 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
 
           {activeTab === 'packages' && (
             <AdminPackagesTab onShowToast={showToast} />
+          )}
+
+          {activeTab === 'ai-agent' && (
+            <AIAgentSettingsTab onShowToast={showToast} />
           )}
 
           {activeTab === 'faqs' && (

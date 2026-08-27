@@ -15,7 +15,8 @@ import {
   MenuItem,
   FooterConfig,
   SiteContentConfig,
-  CustomPageItem
+  CustomPageItem,
+  AIAgentConfig
 } from '../types';
 import { 
   POPULAR_TESTS, 
@@ -31,6 +32,7 @@ import {
   DEFAULT_SITE_CONTENT,
   DEFAULT_CUSTOM_PAGES
 } from '../data/labData';
+import { getStoredAiConfig, saveStoredAiConfig, DEFAULT_AI_CONFIG } from '../services/aiAgentService';
 import * as testService from '../services/testService';
 import * as packageService from '../services/packageService';
 import * as faqService from '../services/faqService';
@@ -128,6 +130,14 @@ interface DataContextType {
   updateAllSiteImages: (images: Partial<SiteImagesConfig>) => void;
   resetSiteImages: () => void;
 
+  // AI Agent Configuration & Actions
+  aiConfig: AIAgentConfig;
+  updateAiConfig: (config: Partial<AIAgentConfig>) => void;
+  isAiDrawerOpen: boolean;
+  setAiDrawerOpen: (open: boolean) => void;
+  activeAiPrompt: string | null;
+  triggerAiPrompt: (prompt: string) => void;
+
   // Admin Authentication & Access Control
   adminUser: AdminUser | null;
   isAdminAuthenticated: boolean;
@@ -164,6 +174,24 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [customPages, setCustomPages] = useState<CustomPageItem[]>(DEFAULT_CUSTOM_PAGES);
   const [adminAccounts, setAdminAccounts] = useState<AdminCredential[]>(authService.DEFAULT_ADMIN_ACCOUNTS);
   const [isFirebaseLoading, setIsFirebaseLoading] = useState(true);
+
+  // AI Agent Configuration & Drawer State
+  const [aiConfig, setAiConfig] = useState<AIAgentConfig>(getStoredAiConfig);
+  const [isAiDrawerOpen, setAiDrawerOpen] = useState(false);
+  const [activeAiPrompt, setActiveAiPrompt] = useState<string | null>(null);
+
+  const updateAiConfig = (updated: Partial<AIAgentConfig>) => {
+    setAiConfig((prev) => {
+      const next = { ...prev, ...updated };
+      saveStoredAiConfig(next);
+      return next;
+    });
+  };
+
+  const triggerAiPrompt = (prompt: string) => {
+    setActiveAiPrompt(prompt);
+    setAiDrawerOpen(true);
+  };
 
   // Admin Session State
   const [adminUser, setAdminUser] = useState<AdminUser | null>(() => {
@@ -839,6 +867,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateSiteImage,
         updateAllSiteImages,
         resetSiteImages,
+
+        aiConfig,
+        updateAiConfig,
+        isAiDrawerOpen,
+        setAiDrawerOpen,
+        activeAiPrompt,
+        triggerAiPrompt,
 
         adminUser,
         isAdminAuthenticated: !!adminUser,

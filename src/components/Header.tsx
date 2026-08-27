@@ -18,7 +18,8 @@ import {
   Lock,
   LogOut,
   ExternalLink,
-  Database
+  Database,
+  Bot
 } from 'lucide-react';
 import { PageType, CartItem, MenuItem } from '../types';
 import { AnnouncementBar } from './AnnouncementBar';
@@ -49,7 +50,8 @@ export const Header: React.FC<HeaderProps> = ({
     logoutAdmin, 
     siteImages, 
     labInfo, 
-    menuItems 
+    menuItems,
+    setAiDrawerOpen
   } = useData();
 
   const [isScrolled, setIsScrolled] = useState(false);
@@ -284,6 +286,17 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Action CTAs */}
           <div className="hidden sm:flex items-center gap-2 shrink-0">
+            {/* Ask AI Agent Button */}
+            <button
+              onClick={() => setAiDrawerOpen(true)}
+              className="inline-flex items-center justify-center h-9 px-3 rounded-xl bg-teal-50 hover:bg-teal-100/80 text-teal-800 text-xs font-bold transition-all duration-150 cursor-pointer border border-teal-200 shadow-2xs group"
+              title="Ask AI Diagnostic Assistant"
+              id="nav-btn-ask-ai"
+            >
+              <Bot className="w-4 h-4 mr-1.5 text-teal-600 group-hover:rotate-12 transition-transform shrink-0" />
+              <span>Ask AI</span>
+            </button>
+
             {/* Upload Rx Prescription Button */}
             <button
               onClick={onOpenPrescription}
@@ -370,6 +383,15 @@ export const Header: React.FC<HeaderProps> = ({
                 <span>Book Test</span>
               </button>
             </div>
+
+            <button
+              onClick={() => { setMobileMenuOpen(false); setAiDrawerOpen(true); }}
+              className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-teal-900 to-sky-950 text-teal-200 hover:text-white border border-teal-500/30 text-xs font-bold flex items-center justify-center gap-2 shadow-xs"
+            >
+              <Bot className="w-4 h-4 text-teal-400" />
+              <span>Ask AI Diagnostic Assistant</span>
+              <Sparkles className="w-3 h-3 text-amber-300 ml-1" />
+            </button>
 
             {/* Dynamic Menu Links in Mobile */}
             <div className="space-y-1 py-1">

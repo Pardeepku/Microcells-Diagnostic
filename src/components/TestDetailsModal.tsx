@@ -9,9 +9,12 @@ import {
   AlertCircle,
   Activity,
   Plus,
-  Check
+  Check,
+  Bot,
+  Sparkles
 } from 'lucide-react';
 import { TestItem, HealthPackage, CartItem } from '../types';
+import { useData } from '../context/DataContext';
 
 interface TestDetailsModalProps {
   item: TestItem | HealthPackage | null;
@@ -32,6 +35,8 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
   onAddToCart,
   onBookNow
 }) => {
+  const { triggerAiPrompt } = useData();
+
   if (!isOpen || !item) return null;
 
   const isTest = type === 'test';
@@ -45,6 +50,11 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
     price: item.price,
     sampleType: isTest ? testItem.sampleType : packageItem.sampleTypes.join(', '),
     fastingRequired: isTest ? testItem.fastingRequired : true
+  };
+
+  const handleAskAi = () => {
+    onClose();
+    triggerAiPrompt(`Explain clinical significance, sample requirements, and preparation rules for ${item.name}`);
   };
 
   return (
@@ -170,6 +180,33 @@ export const TestDetailsModal: React.FC<TestDetailsModalProps> = ({
             <p className="text-[11px] leading-relaxed pl-6">
               {isTest ? testItem.preparationNotes : packageItem.fastingInfo + ' Stay hydrated with drinking water. Please take prescription medicines as instructed by your doctor.'}
             </p>
+          </div>
+
+          {/* AI Clinical Explainer Banner */}
+          <div className="bg-gradient-to-r from-teal-900 via-sky-950 to-slate-900 text-white p-4 rounded-2xl flex items-center justify-between gap-3 shadow-md border border-teal-500/30">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-teal-500/20 border border-teal-400/40 flex items-center justify-center text-teal-300 shrink-0">
+                <Bot className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="font-bold text-xs text-white flex items-center gap-1.5">
+                  <span>Have questions about this {isTest ? 'test' : 'package'}?</span>
+                  <Sparkles className="w-3 h-3 text-teal-400" />
+                </p>
+                <p className="text-[10px] text-slate-300 mt-0.5">
+                  Ask our AI Diagnostic Assistant about interpretation, medications, or reports.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleAskAi}
+              className="px-3 py-1.5 bg-teal-500 hover:bg-teal-400 text-slate-950 rounded-xl font-bold text-xs transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer"
+            >
+              <Bot className="w-3.5 h-3.5" />
+              <span>Ask AI</span>
+            </button>
           </div>
 
         </div>
