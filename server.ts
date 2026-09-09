@@ -20,6 +20,33 @@ function getGeminiClient(customKey?: string): GoogleGenAI | null {
   });
 }
 
+// Resilient helper to call Gemini with multi-model fallback and overload handling
+async function generateGeminiContentWithFallback(
+  geminiClient: GoogleGenAI,
+  prompt: string,
+  config?: any
+): Promise<{ text: string; model: string } | null> {
+  // Supported valid models per GenAI skill: primary -> alias -> flash-lite
+  const candidateModels = ["gemini-3.7-flash", "gemini-flash-latest", "gemini-3.1-flash-lite"];
+  
+  for (const modelName of candidateModels) {
+    try {
+      const response = await geminiClient.models.generateContent({
+        model: modelName,
+        contents: prompt,
+        config: config || { temperature: 0.5 },
+      });
+      if (response && typeof response.text === 'string' && response.text.trim()) {
+        return { text: response.text, model: modelName };
+      }
+    } catch (err: any) {
+      const status = err?.status || err?.code || (err?.message?.includes('503') ? 503 : undefined);
+      console.log(`Model [${modelName}] temporarily unavailable (status: ${status || 'err'}). Trying next model...`);
+    }
+  }
+  return null;
+}
+
 // Helper function to detect medicine/prescription/doctor treatment advice requests
 function checkMedicineOrDoctorAdvice(message: string): { isAdvised: boolean; matched: string[] } {
   const lower = message.toLowerCase();
@@ -612,27 +639,26 @@ ${additionalInstructions ? `\n[LAB MANAGER INSTRUCTIONS]\n${additionalInstructio
           }
           fullPrompt += `Patient Query: ${message}`;
 
-          const geminiResponse = await geminiClient.models.generateContent({
-            model: "gemini-3.7-flash",
-            contents: fullPrompt,
-            config: {
-              temperature: 0.5,
-            }
-          });
+          const geminiResult = await generateGeminiContentWithFallback(
+            geminiClient,
+            fullPrompt,
+            { temperature: 0.5 }
+          );
 
-          const replyText = geminiResponse.text || "";
-          
-          // Match relevant test objects from catalog for quick booking chips
-          const localMatches = generateLocalPathologyResponse(message, testsCatalog, packagesCatalog, labInfo);
+          if (geminiResult && geminiResult.text) {
+            const replyText = geminiResult.text;
+            // Match relevant test objects from catalog for quick booking chips
+            const localMatches = generateLocalPathologyResponse(message, testsCatalog, packagesCatalog, labInfo);
 
-          return res.json({
-            reply: replyText,
-            suggestedTests: localMatches.suggestedTests,
-            source: "gemini",
-            model: "gemini-3.7-flash"
-          });
+            return res.json({
+              reply: replyText,
+              suggestedTests: localMatches.suggestedTests,
+              source: "gemini",
+              model: geminiResult.model
+            });
+          }
         } catch (geminiErr: any) {
-          console.warn("Gemini API call failed, using local pathology engine:", geminiErr?.message || geminiErr);
+          console.log("Gemini engine fallback to local knowledge base:", geminiErr?.message || "overload");
         }
       }
 
@@ -678,17 +704,17 @@ Provide the response in the following structured format:
 - **Turnaround Time (TAT)**: (Standard reporting duration)
 - **Clinical Interpretation**: (What high or low values generally indicate)`;
 
-          const response = await geminiClient.models.generateContent({
-            model: "gemini-3.7-flash",
-            contents: prompt,
-          });
+          const response = await generateGeminiContentWithFallback(geminiClient, prompt);
 
-          return res.json({
-            details: response.text,
-            source: "gemini"
-          });
-        } catch (e) {
-          console.warn("Gemini test-details failed, generating locally:", e);
+          if (response && response.text) {
+            return res.json({
+              details: response.text,
+              source: "gemini",
+              model: response.model
+            });
+          }
+        } catch (e: any) {
+          console.log("Test details fallback to local knowledge:", e?.message || "overload");
         }
       }
 

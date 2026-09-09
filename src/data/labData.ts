@@ -82,7 +82,7 @@ export const DEFAULT_FOOTER_CONFIG: FooterConfig = {
   aboutText: "Microcells Diagnostics Pvt. Ltd. is a dedicated diagnostic and pathology testing laboratory offering reliable results, advanced technology, standardized processes, and patient-focused care.",
   accreditationHeadline: "Committed to Clinical Precision & Patient Safety",
   accreditationSubtext: "Standardized diagnostic protocols, barcoded sample tracking, automated analyzers, and stringent internal quality controls.",
-  copyrightText: "© 2026 Microcells Diagnostics Pvt. Ltd. All rights reserved.",
+  copyrightText: "ERA-LIMS Copyright © 2026. All rights reserved. || Powered by: E-MIDAS INFOSYSTEM PVT.LTD.",
   medicalDisclaimer: "Medical Disclaimer: Diagnostic test results and online reports are intended solely to assist clinical medical practitioners in patient care and diagnosis. They should always be correlated clinically with patient medical history.",
   showQuickLinks: true,
   showDepartments: true,
@@ -293,6 +293,37 @@ By booking diagnostic tests, health packages, or home collection with Microcells
     showInMenu: false,
     showInFooter: true,
     metaDescription: "Terms of service and diagnostic test policies for Microcells Diagnostics Pvt. Ltd.",
+    published: true,
+    createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-08-20T12:00:00.000Z"
+  },
+  {
+    id: "page-refund-policy",
+    slug: "refund-policy",
+    title: "Cancellation & Refund Policy",
+    subtitle: "Policies on diagnostic test cancellations, home collection rescheduling, and refunds",
+    content: `## Cancellation & Refund Policy
+
+At Microcells Diagnostics Pvt. Ltd., we are committed to transparent, reliable diagnostic services. If you need to cancel a booking or request a refund, our standardized procedure is outlined below.
+
+### 1. Pre-Collection Cancellation (Full Refund)
+- **100% Refund**: If a test appointment or home collection booking is cancelled at least 2 hours prior to the scheduled slot or before a phlebotomist is dispatched.
+- Cancellations can be initiated directly by calling our Central Diagnostic Helpline or via our 24/7 WhatsApp desk.
+
+### 2. Phlebotomist Dispatched / Doorstep Cancellation
+- If cancellation occurs after the technician has arrived at the collection address, a nominal doorstep conveyance fee (₹100) may be deducted, and the remaining balance will be refunded.
+
+### 3. Sample Processing
+- Once biological specimens (blood, urine, or swabs) are accessioned and processed on automated clinical analyzers, cancellations cannot be accepted as single-use reagents and consumables are expended.
+
+### 4. Repeat Sampling & Quality Assurance
+- In rare events where a specimen is hemolyzed or insufficient for complete analysis, Microcells Diagnostics provides **free-of-charge repeat sample collection** to ensure reliable clinical reporting.
+
+### 5. Refund Processing Timeline
+- Approved refunds are credited back to the original mode of payment within 3 to 5 business days.`,
+    showInMenu: false,
+    showInFooter: true,
+    metaDescription: "Cancellation and refund policies for diagnostic tests and home blood collection at Microcells Diagnostics.",
     published: true,
     createdAt: "2026-01-01T00:00:00.000Z",
     updatedAt: "2026-08-20T12:00:00.000Z"

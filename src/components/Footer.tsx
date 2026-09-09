@@ -11,7 +11,11 @@ import {
   Award,
   HeartHandshake,
   ArrowUp,
-  ExternalLink
+  ExternalLink,
+  Facebook,
+  Instagram,
+  Linkedin,
+  Twitter
 } from 'lucide-react';
 import { PageType } from '../types';
 import { useData } from '../context/DataContext';
@@ -34,7 +38,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenWhatsApp }) =>
   const customFooterPages = (customPages || []).filter(p => p.isPublished && p.showInFooter);
 
   return (
-    <footer className="bg-slate-950 text-slate-300 pt-16 pb-8 border-t border-slate-800">
+    <footer className="bg-slate-950 text-slate-300 pt-16 pb-0 border-t border-slate-800">
       
       {/* Top Banner / Accreditation Note */}
       {footerConfig?.showAccreditationBanner !== false && (
@@ -297,35 +301,105 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenWhatsApp }) =>
         </div>
 
         {/* Medical & Regulatory Disclaimer Note */}
-        <div className="py-6 border-b border-slate-900 text-[11px] text-slate-500 leading-relaxed">
-          <p>
+        <div className="py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-[11px] text-slate-500 leading-relaxed border-t border-slate-900">
+          <p className="flex-1">
             <strong className="text-slate-400">Medical Disclaimer:</strong> {footerConfig?.medicalDisclaimer || 'Diagnostic test results and health content on this website are intended solely for medical screening, educational awareness, and diagnostic evaluation under the supervision of registered medical practitioners. Laboratory reports must be clinically correlated with patient history and physical findings by a qualified physician.'}
           </p>
+          <button 
+            onClick={scrollToTop}
+            className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-teal-400 border border-slate-800 transition-all cursor-pointer shrink-0 flex items-center gap-1.5 text-xs"
+            title="Back to Top"
+          >
+            <ArrowUp className="w-3.5 h-3.5" />
+            <span>Top</span>
+          </button>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <div>
-            {footerConfig?.copyrightText || `© ${new Date().getFullYear()} ${labInfo?.companyName || 'Microcells Diagnostics Pvt. Ltd.'} All Rights Reserved.`}
-          </div>
+      </div>
 
-          <div className="flex flex-wrap items-center gap-4 sm:gap-6">
-            <button onClick={() => onNavigate('contact')} className="hover:text-slate-300 transition-colors cursor-pointer">
-              Contact & Branches
-            </button>
-            <button onClick={() => onNavigate('faq')} className="hover:text-slate-300 transition-colors cursor-pointer">
-              Patient FAQ
+      {/* ERA-LIMS / E-MIDAS Bottom Section matching design specification */}
+      <div className="w-full bg-[#1d6088] text-white border-t border-[#175073]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-4.5">
+          {/* Top Line: Navigation Links */}
+          <div className="flex flex-wrap items-center gap-6 sm:gap-9 text-xs sm:text-[13.5px] font-normal text-white mb-2 sm:mb-2.5">
+            <button 
+              onClick={() => onNavigate('about')} 
+              className="hover:text-cyan-200 transition-colors cursor-pointer text-left"
+            >
+              About Us
             </button>
             <button 
-              onClick={scrollToTop}
-              className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
-              title="Back to Top"
+              onClick={() => onNavigate('custom-page', 'privacy-policy')} 
+              className="hover:text-cyan-200 transition-colors cursor-pointer text-left"
             >
-              <ArrowUp className="w-4 h-4" />
+              Privacy Policy
+            </button>
+            <button 
+              onClick={() => onNavigate('contact')} 
+              className="hover:text-cyan-200 transition-colors cursor-pointer text-left"
+            >
+              Contact Us
+            </button>
+            <button 
+              onClick={() => onNavigate('custom-page', 'refund-policy')} 
+              className="hover:text-cyan-200 transition-colors cursor-pointer text-left"
+            >
+              Refund Policy
             </button>
           </div>
-        </div>
 
+          {/* Bottom Line: Copyright & Attribution + Social Media Icons */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-[13px] text-white">
+            <div className="font-normal text-white/95">
+              {footerConfig?.copyrightText && footerConfig.copyrightText.includes('ERA-LIMS') 
+                ? footerConfig.copyrightText 
+                : 'ERA-LIMS Copyright © 2026. All rights reserved. || Powered by: E-MIDAS INFOSYSTEM PVT.LTD.'}
+            </div>
+
+            <div className="flex items-center gap-3.5 sm:gap-4 text-white">
+              <a 
+                href={labInfo?.facebookUrl || "https://facebook.com"} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-white hover:text-cyan-200 hover:scale-110 transition-transform p-0.5"
+                title="Facebook"
+                aria-label="Facebook"
+              >
+                <Facebook className="w-4 h-4 fill-current" />
+              </a>
+              <a 
+                href={labInfo?.instagramUrl || "https://instagram.com"} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-white hover:text-cyan-200 hover:scale-110 transition-transform p-0.5"
+                title="Instagram"
+                aria-label="Instagram"
+              >
+                <Instagram className="w-4 h-4" />
+              </a>
+              <a 
+                href={labInfo?.linkedinUrl || "https://linkedin.com"} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-white hover:text-cyan-200 hover:scale-110 transition-transform p-0.5"
+                title="LinkedIn"
+                aria-label="LinkedIn"
+              >
+                <Linkedin className="w-4 h-4 fill-current" />
+              </a>
+              <a 
+                href={labInfo?.twitterUrl || "https://twitter.com"} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-white hover:text-cyan-200 hover:scale-110 transition-transform p-0.5"
+                title="Twitter"
+                aria-label="Twitter"
+              >
+                <Twitter className="w-4 h-4 fill-current" />
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
     </footer>
   );

@@ -233,9 +233,15 @@ export default function App() {
           />
         )}
 
-        {currentPage === 'custom-page' && (
+        {(currentPage === 'custom-page' || currentPage === 'privacy' || currentPage === 'terms') && (
           <CustomPageView
-            slug={pageParam || undefined}
+            slug={
+              currentPage === 'privacy'
+                ? 'privacy-policy'
+                : currentPage === 'terms'
+                ? 'terms-of-service'
+                : pageParam || undefined
+            }
             onNavigate={handleNavigate}
           />
         )}
