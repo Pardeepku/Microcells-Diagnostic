@@ -26,7 +26,8 @@ export const AdminLoginView: React.FC<AdminLoginViewProps> = ({
   onNavigate, 
   onLoginSuccess 
 }) => {
-  const { loginAdmin } = useData();
+  const { loginAdmin, labInfo } = useData();
+  const lisUrl = labInfo?.lisPortalUrl?.trim() || 'https://microcellsdiagnostic.in/pages/login.aspx';
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -248,7 +249,7 @@ export const AdminLoginView: React.FC<AdminLoginViewProps> = ({
           {/* Link to External LIS Portal */}
           <div className="pt-3 border-t border-slate-800/80 text-center">
             <a
-              href="https://emidas.co.in:8890/pages/Login.aspx"
+              href={lisUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-xs text-sky-400 hover:text-sky-300 font-medium transition-colors"

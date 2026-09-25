@@ -18,7 +18,10 @@ import {
   FileCheck,
   Map,
   X,
-  RotateCcw
+  RotateCcw,
+  Database,
+  ExternalLink,
+  Link as LinkIcon
 } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import { LabInfo, LabBranch } from '../../types';
@@ -51,6 +54,13 @@ export const AdminBrandingTab: React.FC<AdminBrandingTabProps> = ({ onShowToast 
   const handleSave = () => {
     updateLabInfo(formData);
     onShowToast('Laboratory branding, logo and contact details saved to cloud database');
+  };
+
+  const handleSaveLisUrl = () => {
+    const urlToSave = formData.lisPortalUrl?.trim() || 'https://microcellsdiagnostic.in/pages/login.aspx';
+    updateLabInfo({ lisPortalUrl: urlToSave });
+    setFormData(prev => ({ ...prev, lisPortalUrl: urlToSave }));
+    onShowToast('Top Right LIS Login option URL updated and synced to database');
   };
 
   // Upload Logo
@@ -316,6 +326,101 @@ export const AdminBrandingTab: React.FC<AdminBrandingTabProps> = ({ onShowToast 
           </div>
         </div>
 
+      </div>
+
+      {/* Top Right LIS Login & Online Laboratory Portal */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-2.5">
+            <span className="p-2 bg-sky-50 text-sky-600 rounded-xl">
+              <Database className="w-5 h-5" />
+            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-bold text-slate-900">Top Right LIS Login Portal Option</h3>
+                <span className="px-2 py-0.5 bg-sky-100 text-sky-800 text-[10px] font-bold rounded-md uppercase tracking-wider">
+                  Header Top-Right
+                </span>
+              </div>
+              <p className="text-xs text-slate-500">Configure the destination URL when users, patients, or staff click the "LIS Login" button in the website header.</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <a
+              href={formData.lisPortalUrl || 'https://microcellsdiagnostic.in/pages/login.aspx'}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              title="Test open LIS link in new tab"
+            >
+              <span>Test Current Link</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+
+            <button
+              type="button"
+              onClick={handleSaveLisUrl}
+              className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm shadow-sky-600/30 cursor-pointer"
+            >
+              <Save className="w-3.5 h-3.5" />
+              <span>Save LIS URL</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-sky-50/60 via-slate-50 to-teal-50/40 border border-sky-100 space-y-4">
+          <div>
+            <label className="text-xs font-bold text-slate-800 block mb-1.5 flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <LinkIcon className="w-3.5 h-3.5 text-sky-600" />
+                <span>LIS Login Target URL (Hyperlink)</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  handleChange('lisPortalUrl', 'https://microcellsdiagnostic.in/pages/login.aspx');
+                  onShowToast('Reset to default Microcells LIS login URL');
+                }}
+                className="text-[11px] text-sky-600 hover:text-sky-800 font-medium cursor-pointer"
+              >
+                Reset to Default
+              </button>
+            </label>
+            <div className="relative">
+              <input
+                type="url"
+                value={formData.lisPortalUrl ?? ''}
+                onChange={(e) => handleChange('lisPortalUrl', e.target.value)}
+                placeholder="https://microcellsdiagnostic.in/pages/login.aspx"
+                className="w-full text-xs sm:text-sm px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 pr-24 font-mono text-slate-800"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-sans pointer-events-none">
+                HTTPS URL
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500 mt-1.5">
+              Default: <code className="text-slate-700 bg-white px-1.5 py-0.5 rounded border border-slate-200">https://microcellsdiagnostic.in/pages/login.aspx</code>. This URL is used dynamically across the Header Top-Right button, Mobile Drawer, Footer, and Staff Login shortcuts.
+            </p>
+          </div>
+
+          {/* Interactive Live Button Preview */}
+          <div className="pt-3 border-t border-sky-200/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold text-slate-600">Live Header Preview:</span>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 text-sky-300 border border-sky-500/30 text-xs font-bold shadow-xs">
+                <Database className="w-3.5 h-3.5 text-sky-400" />
+                <span>LIS Login</span>
+                <ExternalLink className="w-3 h-3 text-sky-400/80" />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 text-[11px] text-slate-500">
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span>Opens securely in a new browser tab (<code className="text-slate-600">_blank</code>)</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* WhatsApp, Phones & Digital Communications */}

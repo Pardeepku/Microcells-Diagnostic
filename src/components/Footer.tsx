@@ -36,6 +36,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenWhatsApp }) =>
   const whatsappClean = (labInfo?.whatsappNumber || '+919876543210').replace(/[^0-9]/g, '');
 
   const customFooterPages = (customPages || []).filter(p => p.isPublished && p.showInFooter);
+  const lisUrl = labInfo?.lisPortalUrl?.trim() || 'https://microcellsdiagnostic.in/pages/login.aspx';
 
   return (
     <footer className="bg-slate-950 text-slate-300 pt-16 pb-0 border-t border-slate-800">
@@ -179,13 +180,13 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenWhatsApp }) =>
                 </li>
                 <li>
                   <a 
-                    href="https://emidas.co.in:8890/pages/Login.aspx" 
+                    href={lisUrl} 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className="hover:text-sky-300 text-sky-400 font-medium transition-colors flex items-center gap-1.5"
                   >
                     <ChevronRight className="w-3.5 h-3.5 text-sky-400" />
-                    <span>LIS Portal (EMIDAS Online)</span>
+                    <span>LIS Portal ({labInfo?.shortName || 'Microcells'} Online)</span>
                   </a>
                 </li>
               </ul>

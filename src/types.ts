@@ -183,6 +183,8 @@ export interface LabInfo {
   linkedinUrl?: string;
   twitterUrl?: string;
   youtubeUrl?: string;
+  shortName?: string;
+  lisPortalUrl?: string;
   branches: LabBranch[];
 }
 

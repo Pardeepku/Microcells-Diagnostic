@@ -16,7 +16,10 @@ import {
   User,
   Shield,
   Eye,
-  EyeOff
+  EyeOff,
+  Database,
+  ExternalLink,
+  Link as LinkIcon
 } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 
@@ -31,8 +34,26 @@ export const AdminSettingsTab: React.FC<AdminSettingsTabProps> = ({ onShowToast 
     resetToDefaults,
     adminUser,
     adminAccounts,
-    changeAdminPassword
+    changeAdminPassword,
+    labInfo,
+    updateLabInfo
   } = useData();
+
+  const [lisPortalUrl, setLisPortalUrl] = useState(labInfo?.lisPortalUrl || 'https://microcellsdiagnostic.in/pages/login.aspx');
+
+  React.useEffect(() => {
+    if (labInfo?.lisPortalUrl) {
+      setLisPortalUrl(labInfo.lisPortalUrl);
+    }
+  }, [labInfo]);
+
+  const handleSaveLisUrl = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const urlToSave = lisPortalUrl.trim() || 'https://microcellsdiagnostic.in/pages/login.aspx';
+    updateLabInfo({ lisPortalUrl: urlToSave });
+    setLisPortalUrl(urlToSave);
+    onShowToast('Top Right LIS Login URL updated and saved');
+  };
 
   // Announcement state
   const [enabled, setEnabled] = useState(announcement.enabled);
@@ -128,6 +149,87 @@ export const AdminSettingsTab: React.FC<AdminSettingsTabProps> = ({ onShowToast 
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
+        {/* Top Right LIS Login Option Setting */}
+        <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-2xs space-y-5 lg:col-span-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+            <div className="flex items-center gap-2">
+              <span className="p-2 bg-sky-50 text-sky-600 rounded-xl">
+                <Database className="w-4 h-4" />
+              </span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-slate-900">Top Right LIS Login Portal Option</h3>
+                  <span className="px-2 py-0.5 bg-sky-100 text-sky-800 text-[10px] font-bold rounded-md uppercase tracking-wider">
+                    Header Button
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500">Change the hyperlink destination for the "LIS Login" button displayed in the top-right header, mobile drawer, and footer.</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <a
+                href={lisPortalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              >
+                <span>Test Link</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+
+              <button
+                type="button"
+                onClick={() => handleSaveLisUrl()}
+                className="px-4 py-1.5 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-sm shadow-sky-600/30 cursor-pointer"
+              >
+                <Save className="w-3.5 h-3.5" />
+                <span>Save LIS URL</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+            <div className="md:col-span-2 space-y-1">
+              <label className="text-xs font-bold text-slate-700 flex items-center justify-between">
+                <span>LIS Portal Hyperlink URL</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLisPortalUrl('https://microcellsdiagnostic.in/pages/login.aspx');
+                    onShowToast('Reset to default Microcells LIS login URL');
+                  }}
+                  className="text-[11px] text-sky-600 hover:text-sky-800 font-medium cursor-pointer"
+                >
+                  Reset to Default
+                </button>
+              </label>
+              <input
+                type="url"
+                value={lisPortalUrl}
+                onChange={(e) => setLisPortalUrl(e.target.value)}
+                placeholder="https://microcellsdiagnostic.in/pages/login.aspx"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-sky-500 focus:outline-none font-mono text-xs text-slate-800"
+              />
+              <p className="text-[11px] text-slate-500">
+                Default: <code className="text-slate-700 font-medium">https://microcellsdiagnostic.in/pages/login.aspx</code>
+              </p>
+            </div>
+
+            <div className="p-3.5 bg-slate-900 rounded-2xl text-white space-y-2">
+              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Live Header Preview</span>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-500/20 text-sky-300 border border-sky-400/30 text-xs font-bold">
+                <Database className="w-3.5 h-3.5 text-sky-400" />
+                <span>LIS Login</span>
+                <ExternalLink className="w-3 h-3 text-sky-400/80" />
+              </div>
+              <p className="text-[10px] text-slate-400 leading-tight">
+                Clicking this button on the live site will open the configured LIS portal in a new tab.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Top Announcement Banner Settings */}
         <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-2xs space-y-5">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-3">

@@ -56,6 +56,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const lisUrl = labInfo?.lisPortalUrl?.trim() || 'https://microcellsdiagnostic.in/pages/login.aspx';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -159,15 +160,15 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* LIS Button (Laboratory Information System) */}
             <a
-              href="https://emidas.co.in:8890/pages/Login.aspx"
+              href={lisUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-400/30 hover:border-sky-400/50 text-xs font-bold transition-all shadow-2xs group"
-              title="Access Online LIS Portal (EMIDAS)"
+              title={`Access Online LIS Portal (${labInfo?.shortName || labInfo?.tradeName || 'Microcells'})`}
               id="topbar-btn-lis"
             >
               <Database className="w-3.5 h-3.5 text-sky-400 group-hover:scale-110 transition-transform" />
-              <span>LIS</span>
+              <span>LIS Login</span>
               <ExternalLink className="w-3 h-3 text-sky-400/80" />
             </a>
 
@@ -426,13 +427,13 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
               
               <a
-                href="https://emidas.co.in:8890/pages/Login.aspx"
+                href={lisUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full py-2.5 px-3 rounded-xl bg-sky-50 text-sky-700 border border-sky-200 text-xs font-bold flex items-center justify-center gap-2"
               >
                 <Database className="w-4 h-4 text-sky-600" />
-                <span>Open Online LIS Portal (EMIDAS)</span>
+                <span>Open Online LIS Portal ({labInfo?.tradeName || 'Microcells'})</span>
               </a>
             </div>
 

@@ -37,6 +37,8 @@ export const LAB_INFO: LabInfo = {
   isoAccreditationText: "ISO 15189:2022 Certified Medical Testing Laboratory",
   icmrRegNumber: "ICMR-REG-IND-9941",
   gstNumber: "27AAACM1234F1Z5",
+  shortName: "Microcells",
+  lisPortalUrl: "https://microcellsdiagnostic.in/pages/login.aspx",
   branches: [
     {
       id: "branch-hq",

@@ -17,7 +17,8 @@ import {
   ExternalLink,
   Layers,
   Edit2,
-  X
+  X,
+  Database
 } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import { MenuItem, PageType } from '../../types';
@@ -28,9 +29,23 @@ interface AdminMenuTabProps {
 }
 
 export const AdminMenuTab: React.FC<AdminMenuTabProps> = ({ onShowToast }) => {
-  const { menuItems, updateMenuItems, customPages } = useData();
+  const { menuItems, updateMenuItems, customPages, labInfo, updateLabInfo } = useData();
 
   const [items, setItems] = useState<MenuItem[]>(menuItems);
+  const [lisPortalUrl, setLisPortalUrl] = useState(labInfo?.lisPortalUrl || 'https://microcellsdiagnostic.in/pages/login.aspx');
+
+  React.useEffect(() => {
+    if (labInfo?.lisPortalUrl) {
+      setLisPortalUrl(labInfo.lisPortalUrl);
+    }
+  }, [labInfo]);
+
+  const handleSaveLis = () => {
+    const urlToSave = lisPortalUrl.trim() || 'https://microcellsdiagnostic.in/pages/login.aspx';
+    updateLabInfo({ lisPortalUrl: urlToSave });
+    setLisPortalUrl(urlToSave);
+    onShowToast('Top Right LIS Login URL updated and saved');
+  };
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
@@ -168,6 +183,73 @@ export const AdminMenuTab: React.FC<AdminMenuTabProps> = ({ onShowToast }) => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-200">
+      
+      {/* Top Header Action Buttons: LIS Login */}
+      <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-2.5">
+            <span className="p-2 bg-sky-50 text-sky-600 rounded-xl">
+              <Database className="w-5 h-5" />
+            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-bold text-slate-900">Header Top-Right LIS Login Option</h3>
+                <span className="px-2 py-0.5 bg-sky-100 text-sky-800 text-[10px] font-bold rounded-md">
+                  Top Bar Action
+                </span>
+              </div>
+              <p className="text-xs text-slate-500">
+                Change the destination link for the "LIS Login" button located at the top right of the website.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <a
+              href={lisPortalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+            >
+              <span>Test Link</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+
+            <button
+              type="button"
+              onClick={handleSaveLis}
+              className="px-4 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm shadow-sky-600/30 cursor-pointer"
+            >
+              <Save className="w-3.5 h-3.5" />
+              <span>Save LIS URL</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="flex-1 space-y-1">
+            <label className="text-xs font-bold text-slate-700 block">LIS Login Target URL (Hyperlink)</label>
+            <input
+              type="url"
+              value={lisPortalUrl}
+              onChange={(e) => setLisPortalUrl(e.target.value)}
+              placeholder="https://microcellsdiagnostic.in/pages/login.aspx"
+              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setLisPortalUrl('https://microcellsdiagnostic.in/pages/login.aspx');
+              updateLabInfo({ lisPortalUrl: 'https://microcellsdiagnostic.in/pages/login.aspx' });
+              onShowToast('Reset LIS URL to default');
+            }}
+            className="self-end px-3.5 py-2.5 text-xs text-slate-600 hover:text-slate-900 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer"
+          >
+            Reset Default
+          </button>
+        </div>
+      </div>
       
       {/* Header Banner */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-6">
